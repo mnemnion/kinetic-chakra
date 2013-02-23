@@ -21,8 +21,13 @@ var outerEdge = new Kinetic.Circle({
 var chakraRadius = outerEdge.getRadius()/2;
 
 var gameState = {
-  isBlackMove: true,
-  board: Array()
+  isBlackMove: true
+}
+
+gameState.board = new Array(6);
+
+for (var n=0; n < 12; n++) {
+  gameState.board[n] = new Array(12);
 }
 
 var chakraRing = new Array();
@@ -81,6 +86,7 @@ for (n=1; n<7; n++) {
         circle.circleLevel = n;
         circle.circleNumber = m;
 
+
         circle.on('click', function(evt){
           if (gameState.isBlackMove) {
             this.setFill('black');
@@ -90,6 +96,8 @@ for (n=1; n<7; n++) {
             gameState.isBlackMove = true;
           }
           console.log('clicked ' + this.circleLevel + ' ' + this.circleNumber);
+          gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
+          console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
           targetLayer.draw();
         });
 
