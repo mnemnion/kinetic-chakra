@@ -1,84 +1,142 @@
-     var stage = new Kinetic.Stage({
-        container: 'container',
-        width: 600,
-        height: 600,
-      });
+var stage = new Kinetic.Stage({
+    container: 'container',
+    width: 600,
+    height: 600,
+});
 
-      var boardLayer = new Kinetic.Layer();
-      var backgroundLayer = new Kinetic.Layer();
-      var targetLayer = new Kinetic.Layer();
+var boardLayer = new Kinetic.Layer();
+var backgroundLayer = new Kinetic.Layer();
+var targetLayer = new Kinetic.Layer();
 
-      // outerEdge defines the outer edge of the board
-      var outerEdge = new Kinetic.Circle({ 
-        x: stage.getWidth() / 2,
-        y: stage.getHeight() / 2,
-        radius: stage.getWidth()/2 - 0.1*stage.getWidth()/2,
-        fill: 'none',
-        stroke: 'none',
-        strokeWidth: 4
-      });
+// outerEdge defines the outer edge of the board
+var outerEdge = new Kinetic.Circle({ 
+  x: stage.getWidth() / 2,
+  y: stage.getHeight() / 2,
+  radius: stage.getWidth()/2 - 0.1*stage.getWidth()/2,
+  fill: 'none',
+  stroke: 'none',
+  strokeWidth: 4
+});
 
-      var chakraRadius = outerEdge.getRadius()/2;
+var chakraRadius = outerEdge.getRadius()/2;
 
-      var chakraRing = new Kinetic.Group();
+var gameState = {
+  isBlackMove: true
+}
 
-      // populate chakraRing group with circles.
-      for (var n=0; n<12; n++) {
-        (function() {
-        var i = n;
-        var color = '';
-        if (i%2===0){
-            color = 'black';
+var chakraRing = new Array();
+
+// populate chakraRing group with circles.
+for (var n=0; n<12; n++) {
+  (function() {
+  var i = n;
+  var color = '';
+  if (i%2===0){
+      color = 'black';
+  } else {
+      color = 'maroon';
+  };
+  var circle = new Kinetic.Circle({
+    x: stage.getWidth() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
+    y: stage.getWidth() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
+    radius: chakraRadius,
+    fill: 'none',
+    stroke: color,
+    strokeWidth: 4
+  });
+
+  console.log("creating ring " + i);
+  console.log(circle.getRadius());
+  chakraRing[i]=circle;
+  })();
+};
+
+var targetCircles = new Array();
+
+for (n=1; n<7; n++) {
+  (function(){
+    var i = n;
+    var ring = Array();
+    ringRadius = chakraRadius * Math.sin(2*Math.PI*i/24);
+    for (m=0; m<12; m++) {
+      (function(){
+        var i = m;
+        if (n%2 === 0) {
+          var offset = 0;
         } else {
-            color = 'red';
-        };
+          var offset = 0.5;
+        }
         var circle = new Kinetic.Circle({
-          x: stage.getWidth() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
-          y: stage.getWidth() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
-          radius: chakraRadius,
-          fill: 'none',
-          stroke: color,
-          strokeWidth: 4
+          x : stage.getWidth() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(i+offset)/12),
+          y : stage.getWidth() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(i+offset)/12),
+          radius : chakraRadius/8,
+          fill : 'none',
+          stroke : 'green',
+          strokeWidth : 2,
         });
+        console.log("Creating target " + n + " sub " + m);
 
-        console.log("creating ring " + i);
-        console.log(circle.getRadius());
-        chakraRing.add(circle);
-        })();
-      };
+        circle.on('click', function(evt){
+          if (gameState.isBlackMove) {
+            this.setFill('black');
+            gameState.isBlackMove = false;
+          } else {
+            this.setFill('white');
+            gameState.isBlackMove = true;
+          }
+          targetLayer.draw();
+        });
+        circle.on('mouseover', function(evt){
+          this.setStroke('black');
+          this.setStrokeWidth(4);
+          targetLayer.draw();
+        });
+        circle.on('mouseleave', function(evt){
+          this.setStroke('green');
+          this.setStrokeWidth(2);
+          targetLayer.draw();
+        })
+        ring.push(circle);
+      })();
+    }
+  targetCircles.push(ring);
+  })();
+}
 
-      var targetCircles = new Kinetic.Group();
 
-      for (n=0; n<12; n++) {
-        (function(){
-          var i = n;
-          var circle = new Kinetic.Circle({
-            x : stage.getWidth() / 2 + 2*chakraRadius*Math.cos(2*Math.PI*i/12),
-            y : stage.getWidth() / 2 + 2*chakraRadius*Math.sin(2*Math.PI*i/12),
-            radius : chakraRadius/8,
-            fill : 'none',
-            stroke : 'green',
-            strokeWidth : 2
-          })
-          targetCircles.add(circle);
-        })();
-      }
-    
-      var border = new Kinetic.Rect({
-        x: 4,
-        y: 4,
-        width: stage.getWidth()-6,
-        height: stage.getHeight()-6,
-        stroke: 'black',
-        fill: '#999999',
-        strokeWidth: 4
-      })
+var border = new Kinetic.Rect({
+  x: 4,
+  y: 4,
+  width: stage.getWidth()-6,
+  height: stage.getHeight()-6,
+  stroke: 'black',
+  fill: '#999999',
+  strokeWidth: 4
+})
 
-      // add the layers up
+// add the layers up
+for (n=0; n<chakraRing.length; n++) {
+  boardLayer.add(chakraRing[n]);  
+}
 
-      boardLayer.add(chakraRing);
-      backgroundLayer.add(border);
+backgroundLayer.add(border);
 
-      // add the layer to the stage
-      stage.add(backgroundLayer);
-      stage.add(boardLayer);
+for (n=0; n<targetCircles.length;n++) {
+  for (m=0; m<targetCircles[n].length; m++) {
+    console.log("adding targetCircles " + n + " sub " + m);
+    targetLayer.add(targetCircles[n][m]);
+  }
+}
+
+
+targetCircles[2][9].setFill("red");
+
+targetCircles[0][0].setFill("black");
+
+
+// add the layer to the stage
+stage.add(backgroundLayer);
+stage.add(boardLayer);
+stage.add(targetLayer);
+
+console.log("ready");
