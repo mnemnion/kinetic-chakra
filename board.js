@@ -4,8 +4,11 @@
         height: 600,
       });
 
-      var layer = new Kinetic.Layer();
-      // outerEdge defines the outeredge of the board
+      var boardLayer = new Kinetic.Layer();
+      var backgroundLayer = new Kinetic.Layer();
+      var targetLayer = new Kinetic.Layer();
+
+      // outerEdge defines the outer edge of the board
       var outerEdge = new Kinetic.Circle({ 
         x: stage.getWidth() / 2,
         y: stage.getHeight() / 2,
@@ -15,19 +18,26 @@
         strokeWidth: 4
       });
 
-      var chakraRing = new Kinetic.Group();
       var chakraRadius = outerEdge.getRadius()/2;
-//      chakraRing.add(circle);
 
+      var chakraRing = new Kinetic.Group();
+
+      // populate chakraRing group with circles.
       for (var n=0; n<12; n++) {
         (function() {
         var i = n;
+        var color = '';
+        if (i%2===0){
+            color = 'black';
+        } else {
+            color = 'red';
+        };
         var circle = new Kinetic.Circle({
           x: stage.getWidth() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
           y: stage.getWidth() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
           radius: chakraRadius,
           fill: 'none',
-          stroke: 'black',
+          stroke: color,
           strokeWidth: 4
         });
 
@@ -37,19 +47,38 @@
         })();
       };
 
+      var targetCircles = new Kinetic.Group();
+
+      for (n=0; n<12; n++) {
+        (function(){
+          var i = n;
+          var circle = new Kinetic.Circle({
+            x : stage.getWidth() / 2 + 2*chakraRadius*Math.cos(2*Math.PI*i/12),
+            y : stage.getWidth() / 2 + 2*chakraRadius*Math.sin(2*Math.PI*i/12),
+            radius : chakraRadius/8,
+            fill : 'none',
+            stroke : 'green',
+            strokeWidth : 2
+          })
+          targetCircles.add(circle);
+        })();
+      }
+    
       var border = new Kinetic.Rect({
         x: 4,
         y: 4,
         width: stage.getWidth()-6,
         height: stage.getHeight()-6,
         stroke: 'black',
+        fill: '#999999',
         strokeWidth: 4
       })
 
-      // add the shape to the layer
-     // layer.add(chakraRing[14]);
-      layer.add(chakraRing);
-      layer.add(border);
+      // add the layers up
+
+      boardLayer.add(chakraRing);
+      backgroundLayer.add(border);
 
       // add the layer to the stage
-      stage.add(layer);
+      stage.add(backgroundLayer);
+      stage.add(boardLayer);
