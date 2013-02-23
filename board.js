@@ -1,12 +1,13 @@
 var stage = new Kinetic.Stage({
     container: 'container',
-    width: 600,
-    height: 600,
+    width: 640,
+    height: 640,
 });
 
 var boardLayer = new Kinetic.Layer();
 var backgroundLayer = new Kinetic.Layer();
 var targetLayer = new Kinetic.Layer();
+var pieceLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
@@ -20,8 +21,11 @@ var outerEdge = new Kinetic.Circle({
 
 var chakraRadius = outerEdge.getRadius()/2;
 
+// Game Logic
+
 var gameState = {
   isBlackMove: true,
+  isSliding: false,
   blackCaptures: 0,
   whiteCaptures: 0
 }
@@ -32,52 +36,77 @@ for (var n=0; n < 7; n++) {
   gameState.board[n] = new Array(12);
   for (var m=0; m < 12; m++) {
     gameState.board[n][m] = 'none';
-  }
-  
+  } 
 }
+
+
+gameState.getAdjacent = function(circleLevel, circleNumber) {
+
+}
+
+gameState.getGroup = function(circleLevel, circleNumber) {
+
+}
+
+gameState.getSlideable = function(circleLevel, circleNumber) {
+  // return all points this piece can slide to.
+
+}
+
+gameState.countLiberties = function(circleGroup) {
+
+}
+
+gameState.isDead = function(circleGroup) {
+
+}
+
+gameState.calculateWin = function() {
+
+}
+
+
+
+// End Game Logic
 
 var chakraRing = new Array();
 
 // populate chakraRing group with circles.
 for (var n=0; n<12; n++) {
   (function() {
-  var i = n;
-  var color = '';
-  if (i%2===0){
-      color = 'black';
-  } else {
-      color = 'maroon';
-  };
-  var circle = new Kinetic.Circle({
-    x: stage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
-    y: stage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
-    radius: chakraRadius,
-    fill: 'none',
-    stroke: color,
-    strokeWidth: 4
-  });
+    var i = n;
+    var color = '';
+    if (i%2===0){
+        color = 'black';
+    } else {
+        color = 'maroon';
+    };
 
-  console.log("creating ring " + i);
-  console.log(circle.getRadius());
-  chakraRing[i]=circle;
+    var circle = new Kinetic.Circle({
+      x: stage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
+      y: stage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
+      radius: chakraRadius,
+      fill: 'none',
+      stroke: color,
+      strokeWidth: 4
+    });
+
+ //   console.log("creating ring " + i);
+    chakraRing[i]=circle;
   })();
 };
 
 var targetCircles = new Array();
 
+//populate the targetCircles array with special targetCircles
 for (n=1; n<7; n++) {
   (function(){
     var i = n;
     var ring = Array();
-    ringRadius = chakraRadius * Math.sin(2*Math.PI*i/24);
+    ringRadius = chakraRadius * Math.sin(2*Math.PI*i/24); // formula of a chord
     for (m=0; m<12; m++) {
       (function(){
         var i = m;
-        if (n%2 === 0) {
-          var offset = 0;
-        } else {
-          var offset = 0.5;
-        }
         var circle = new Kinetic.Circle({
           x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(i+n/2)/12),
           y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(i+n/2)/12),
@@ -85,27 +114,26 @@ for (n=1; n<7; n++) {
           fill : 'none',
           stroke : 'none',
           strokeWidth : 2,
-          id: n + '~' + m
         });
-        console.log("Creating target " + n + " sub " + m);
+//        console.log("Creating target " + n + " sub " + m);
 
         circle.circleLevel = n;
         circle.circleNumber = m;
 
-
         circle.on('click', function(evt){
           if (gameState.board[this.circleLevel][this.circleNumber] === 'none') {
-            if (gameState.isBlackMove) {
-              this.setFill('black');
-              gameState.isBlackMove = false;
-            } else {
-              this.setFill('white');
-              gameState.isBlackMove = true;
+            if (!gameState.isSliding) {
+              if (gameState.isBlackMove) {
+                this.setFill('black');
+                gameState.isBlackMove = false;
+              } else {
+                this.setFill('white');
+                gameState.isBlackMove = true;
+              }
+              gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
+              console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
+              targetLayer.draw();
             }
-            console.log('clicked ' + this.circleLevel + ' ' + this.circleNumber);
-            gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
-            console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
-            targetLayer.draw();
           }
         });
 
@@ -147,7 +175,7 @@ backgroundLayer.add(border);
 
 for (n=0; n<targetCircles.length;n++) {
   for (m=0; m<targetCircles[n].length; m++) {
-    console.log("adding targetCircles " + n + " sub " + m);
+//    console.log("adding targetCircles " + n + " sub " + m);
     targetLayer.add(targetCircles[n][m]);
   }
 }
