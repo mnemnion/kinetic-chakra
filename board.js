@@ -65,11 +65,31 @@ gameState.calculateWin = function() {
 
 }
 
-
-
 // End Game Logic
 
+// View Logic
+
+// View functions
+
 var chakraRing = new Array();
+var pieceArray = new Array();
+
+function addPiece (x,y, type) {
+  (function() {
+    
+    var newPiece = new Kinetic.Circle ({
+      x: x,
+      y: y,
+      radius: chakraRadius/8,
+      fill: type
+    });
+    pieceArray.push(newPiece);
+    pieceLayer.add(newPiece);
+    pieceLayer.draw();
+  })(); 
+}
+
+
 
 // populate chakraRing group with circles.
 for (var n=0; n<12; n++) {
@@ -147,6 +167,11 @@ for (n=1; n<7; n++) {
           this.setStroke('none');
           this.setStrokeWidth(2);
           targetLayer.draw();
+        });
+
+        circle.on('dblclick', function(evt){
+          addPiece(this.getX(),this.getY(), 'red');
+          console.log("doubleclick detected");
         })
         ring.push(circle);
       })();
@@ -180,11 +205,20 @@ for (n=0; n<targetCircles.length;n++) {
   }
 }
 
+var button = new Kinetic.Rect({
+  x: 200,
+  y: 200,
+  width: 50,
+  height: 50,
+  stroke: 'black',
+  strokeWidth: 4
+})
 
+pieceLayer.add(button);
 
 // add the layer to the stage
 stage.add(backgroundLayer);
 stage.add(boardLayer);
 stage.add(targetLayer);
-
+stage.add(pieceLayer);
 console.log("ready");
