@@ -10,9 +10,9 @@ var targetLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
-  x: stage.getWidth() / 2,
+  x: stage.getHeight() / 2,
   y: stage.getHeight() / 2,
-  radius: stage.getWidth()/2 - 0.1*stage.getWidth()/2,
+  radius: stage.getHeight()/2 - 0.1*stage.getHeight()/2,
   fill: 'none',
   stroke: 'none',
   strokeWidth: 4
@@ -21,7 +21,8 @@ var outerEdge = new Kinetic.Circle({
 var chakraRadius = outerEdge.getRadius()/2;
 
 var gameState = {
-  isBlackMove: true
+  isBlackMove: true,
+  board: Array()
 }
 
 var chakraRing = new Array();
@@ -37,8 +38,8 @@ for (var n=0; n<12; n++) {
       color = 'maroon';
   };
   var circle = new Kinetic.Circle({
-    x: stage.getWidth() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
-    y: stage.getWidth() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
+    x: stage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
+    y: stage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
     radius: chakraRadius,
     fill: 'none',
     stroke: color,
@@ -67,14 +68,18 @@ for (n=1; n<7; n++) {
           var offset = 0.5;
         }
         var circle = new Kinetic.Circle({
-          x : stage.getWidth() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(i+offset)/12),
-          y : stage.getWidth() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(i+offset)/12),
+          x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(i+n/2)/12),
+          y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(i+n/2)/12),
           radius : chakraRadius/8,
           fill : 'none',
-          stroke : 'green',
+          stroke : 'none',
           strokeWidth : 2,
+          id: n + '~' + m
         });
         console.log("Creating target " + n + " sub " + m);
+
+        circle.circleLevel = n;
+        circle.circleNumber = m;
 
         circle.on('click', function(evt){
           if (gameState.isBlackMove) {
@@ -84,15 +89,18 @@ for (n=1; n<7; n++) {
             this.setFill('white');
             gameState.isBlackMove = true;
           }
+          console.log('clicked ' + this.circleLevel + ' ' + this.circleNumber);
           targetLayer.draw();
         });
+
         circle.on('mouseover', function(evt){
           this.setStroke('black');
           this.setStrokeWidth(4);
           targetLayer.draw();
         });
+
         circle.on('mouseleave', function(evt){
-          this.setStroke('green');
+          this.setStroke('none');
           this.setStrokeWidth(2);
           targetLayer.draw();
         })
@@ -128,10 +136,6 @@ for (n=0; n<targetCircles.length;n++) {
   }
 }
 
-
-targetCircles[2][9].setFill("red");
-
-targetCircles[0][0].setFill("black");
 
 
 // add the layer to the stage
