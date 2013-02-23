@@ -21,13 +21,19 @@ var outerEdge = new Kinetic.Circle({
 var chakraRadius = outerEdge.getRadius()/2;
 
 var gameState = {
-  isBlackMove: true
+  isBlackMove: true,
+  blackCaptures: 0,
+  whiteCaptures: 0
 }
 
 gameState.board = new Array(6);
 
-for (var n=0; n < 12; n++) {
+for (var n=0; n < 7; n++) {
   gameState.board[n] = new Array(12);
+  for (var m=0; m < 12; m++) {
+    gameState.board[n][m] = 'none';
+  }
+  
 }
 
 var chakraRing = new Array();
@@ -88,17 +94,19 @@ for (n=1; n<7; n++) {
 
 
         circle.on('click', function(evt){
-          if (gameState.isBlackMove) {
-            this.setFill('black');
-            gameState.isBlackMove = false;
-          } else {
-            this.setFill('white');
-            gameState.isBlackMove = true;
+          if (gameState.board[this.circleLevel][this.circleNumber] === 'none') {
+            if (gameState.isBlackMove) {
+              this.setFill('black');
+              gameState.isBlackMove = false;
+            } else {
+              this.setFill('white');
+              gameState.isBlackMove = true;
+            }
+            console.log('clicked ' + this.circleLevel + ' ' + this.circleNumber);
+            gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
+            console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
+            targetLayer.draw();
           }
-          console.log('clicked ' + this.circleLevel + ' ' + this.circleNumber);
-          gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
-          console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
-          targetLayer.draw();
         });
 
         circle.on('mouseover', function(evt){
