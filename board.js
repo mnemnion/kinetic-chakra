@@ -50,14 +50,6 @@ var gameState = {
   whiteCaptures: 0
 };
 
-gameState.board = new Array(6);
-
-for (var n=0; n < 7; n++) {
-  gameState.board[n] = new Array(12);
-  for (var m=0; m < 12; m++) {
-    gameState.board[n][m] = 'none';
-  } 
-};
 
 
 gameState.getAdjacent = function(level, row) {
@@ -160,6 +152,13 @@ gameState.calculateWin = function() {
 var chakraRing = new Array();
 var pieceArray = new Array();
 
+for (i=0; i < 6; i++) {
+  pieceArray[i] = new Array();
+  for(j=0; j < 12; j++) {
+    pieceArray[i].push('mt');
+  }
+}
+
 function addPiece (that, type) {
   (function() {
     
@@ -172,8 +171,7 @@ function addPiece (that, type) {
     });
     newPiece.circleRow = that.circleRow;
     newPiece.circleLevel  = that.circleLevel;
-    gameState.board[newPiece.circleLevel][newPiece.circleRow] = newPiece.getFill();
-    pieceArray.push(newPiece);
+    pieceArray[that.circleLevel][that.circleRow] = newPiece;
     pieceLayer.add(newPiece);
     pieceLayer.draw();
   })(); 
@@ -226,7 +224,7 @@ var targetCircles = new Array();
         circle.circleRow = m;
 
         circle.on('click', function(evt){
-          if (gameState.board[this.circleLevel][this.circleRow] === 'none') {
+          if (pieceArray[this.circleLevel][this.circleRow] === 'mt') {
             if (!gameState.isSliding) {
               if (gameState.isBlackMove) {
                 addPiece(this, 'black');
@@ -235,7 +233,7 @@ var targetCircles = new Array();
                 addPiece(this, 'white');
                 gameState.isBlackMove = true;
               }
-              console.log(this.circleLevel + ' sub ' + this.circleRow + ' is now ' + gameState.board[this.circleLevel][this.circleRow]);
+              console.log(this.circleLevel + ' sub ' + this.circleRow + ' is now ' + pieceArray[this.circleLevel][this.circleRow].getFill());
               targetLayer.draw();
             }
           }
