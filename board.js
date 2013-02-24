@@ -22,6 +22,15 @@ var outerEdge = new Kinetic.Circle({
 
 var chakraRadius = outerEdge.getRadius()/2;
 
+var pieceArray = new Array();
+
+for (i=0; i < 6; i++) {
+  pieceArray[i] = new Array();
+  for(j=0; j < 12; j++) {
+    pieceArray[i].push('mt');
+  }
+}
+
 // Game Logic
 
 function cycleTwelve(value, addend) {
@@ -52,7 +61,7 @@ var gameState = {
 
 
 
-gameState.getAdjacent = function(level, row) {
+getAdjacent = function(level, row) {
   var adjacencies = Array();
   switch(level) {
     case 0:
@@ -122,24 +131,40 @@ gameState.getAdjacent = function(level, row) {
 };
 
 
-gameState.getGroup = function(circleLevel, circleRow) {
-
+getGroup = function(level, row) {
+ 
+    var group = Array();
+    color = pieceArray[level][row].getFill();
+    group.push(pieceArray[level][row]);
+    return(group);
+    //keep working from here
 };
 
-gameState.getSlideable = function(circleLevel, circleRow) {
+
+
+getSlideable = function(circleLevel, circleRow) {
   // return all points this piece can slide to.
 
 };
 
-gameState.countLiberties = function(circleGroup) {
+countLiberties = function(circleGroup) {
 
 };
 
-gameState.isDead = function(circleGroup) {
-
+isDead = function(circleGroup) {
+  // note to self: 
+  // it is quite possible that groups
+  // will get collected twice,
+  // so we need to kill them the first time,
+  // making it impossible to kill them again. 
+  //
+  // in particular, if a piece is placed ajacent to
+  // two pieces in the same killable group, that group
+  // could be collected twice. I can think of ways to avoid
+  // that, which is probably the better thing to do. hmm.
 };
 
-gameState.calculateWin = function() {
+calculateWin = function() {
 
 };
 
@@ -150,18 +175,9 @@ gameState.calculateWin = function() {
 // View functions
 
 var chakraRing = new Array();
-var pieceArray = new Array();
 
-for (i=0; i < 6; i++) {
-  pieceArray[i] = new Array();
-  for(j=0; j < 12; j++) {
-    pieceArray[i].push('mt');
-  }
-}
 
 function addPiece (that, type) {
-  (function() {
-    
     var newPiece = new Kinetic.Circle ({
       x: that.getX(),
       y: that.getY(),
@@ -174,7 +190,6 @@ function addPiece (that, type) {
     pieceArray[that.circleLevel][that.circleRow] = newPiece;
     pieceLayer.add(newPiece);
     pieceLayer.draw();
-  })(); 
 }
 
 
@@ -251,13 +266,8 @@ var targetCircles = new Array();
         });
 
         circle.on('dblclick', function(evt){
-          var buddies = gameState.getAdjacent(this.circleLevel,this.circleRow);
-          console.log(buddies);
-          for (i = 0; i < buddies.length; i++) {
-            targetCircles[buddies[i].circleLevel][buddies[i].circleRow].setFill('lightgreen');
-          }
-          targetLayer.draw();
-        })
+          console.log(getGroup(this.circleLevel,this.circleRow));
+        });
   
         ring.push(circle);
     }
