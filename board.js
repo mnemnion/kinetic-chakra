@@ -1,7 +1,7 @@
 (function(){
 var stage = new Kinetic.Stage({
     container: 'container',
-    width: 640,
+    width: 860,
     height: 640,
 });
 
@@ -71,7 +71,8 @@ var gameState = {
   isBlackMove: true,
   isSliding: false,
   blackCaptures: 0,
-  whiteCaptures: 0
+  whiteCaptures: 0,
+  showAdjacents: false
 };
 
 
@@ -202,6 +203,34 @@ calculateWin = function() {
 
 var chakraRing = new Array();
 
+(function() {
+  var inspectButton = new Kinetic.Rect ({
+    x: stage.getWidth()*4/5,
+    y: stage.getHeight()*1/5,
+    cornerRadius: 6,
+    height: 50,
+    width: 150,
+    fill: 'maroon',
+    stroke: 'black',
+    strokeWidth: 2
+  })
+
+  inspectButton.on('click', function(evt){
+    if (gameState.showAdjacents === false) {
+      gameState.showAdjacents = true;
+      this.setFill('red');
+    } else {
+      gameState.showAdjacents = false;
+      this.setFill('maroon');
+    }
+    targetLayer.draw();
+  });
+
+  targetLayer.add(inspectButton);
+  targetLayer.draw();
+}());
+
+
 
 function addPiece (that, type) {
     var newPiece = new Kinetic.Circle ({
@@ -260,7 +289,10 @@ var targetCircles = new Array();
         var circle = new Kinetic.Circle({
           x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
           y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
-          radius : chakraRadius/8
+          radius : chakraRadius/8,
+          fill: 'none',
+          stroke: 'none',
+          strokeWidth: 2,
         });
         circle.level = n-1;
         circle.row = m;
@@ -284,11 +316,24 @@ var targetCircles = new Array();
         circle.on('mouseover', function(evt){
           this.setStroke('green');
           this.setStrokeWidth(3);
+          if(gameState.showAdjacents===true) {
+            var buddies = getAdjacentTargets(this.level,this.row);
+            for (var i=0; i<buddies.length; i++) {
+              targetCircles[buddies[i].level][buddies[i].row].setStroke('lightgreen');
+            }
+          }
           targetLayer.draw();
         });
 
         circle.on('mouseleave', function(evt){
           this.setStroke('none');
+          targetLayer.draw();
+          if(gameState.showAdjacents===true) {
+            var buddies = getAdjacentTargets(this.level,this.row);
+            for (var i=0; i<buddies.length; i++) {
+              targetCircles[buddies[i].level][buddies[i].row].setStroke('none');
+            }
+          }
           targetLayer.draw();
         });
 
