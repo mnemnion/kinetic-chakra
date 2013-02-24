@@ -94,7 +94,7 @@ getAdjacent = function(level, row, circleArray) {
       adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
       adjacencies[2] = circleArray[level-1][cycleTwelve(row, +1)];
-      adjacencies[3] = circleArray[level][row];   
+      adjacencies[3] = circleArray[level-1][row];   
       break;
     case 5:
       console.log("the outer rim!");
@@ -111,7 +111,13 @@ getAdjacent = function(level, row, circleArray) {
 };
 
 getAdjacentPieces = function(level, row) {
-  var pieces = getAdjacent(level, row, pieceArray);
+  var buddies = getAdjacent(level, row, pieceArray);
+  var pieces = Array();
+  for (var i=0; i<buddies.length;i++) {
+    if (buddies[i]!=='mt') {
+      pieces.push(buddies[i]);
+    }
+  }
   return pieces;
 }
 
@@ -124,28 +130,38 @@ getAdjacentTargets = function(level,row) {
 getGroup = function(level, row, shade) {
     if (shade === undefined) {
       shade = pieceArray[level][row].getFill();
-    }
+    } //if we don't know the color of the group, we do now.
     var group = Array();
     var buddies = Array();
     var stager = Array();
-    color = pieceArray[level][row].getFill();
-    if (color===shade){
-      group.push(pieceArray[level][row]);
-      group[0].grouped = true;
+    color = pieceArray[level][row].getFill(); 
+    if (color===shade) { // are we looking at a piece of the right color?
+      group.push(pieceArray[level][row]); // good. let's add it.
+      group[group.length-1].grouped = true; // now let's group the piece
       buddies = getAdjacentPieces(level, row, shade);
+      console.log('collecting buddies');
+      console.log(buddies); // everything in here should be a piece.
       for (var i=0; i < buddies.length; i++) {
-        if (buddies[i] !== 'mt') {
+        if (buddies[i] !== 'mt') { // this should never happen
           if (buddies[i].getFill() === color && buddies[i].grouped === false) {
-            buddies[i].grouped === true;
             group.push(buddies[i]);
+            group[group.length-1].grouped = true;
             stager = getGroup(buddies[i].level, buddies[i].row);
             for (var j=0; j < stager.length; j++) {
               group.push(stager[i]);
             }
           }
+        } else {
+          console.log("there was an empty in your buddies")
         }
       }
-      return(group);
+      var returnArray = Array();
+      for (var i=0; i<group.length; i++) {
+        if(group[i]!==undefined) {
+          returnArray.push(group[i]);
+        }
+      }
+      return(returnArray);
     } else {
       console.log('empty space contains no group');
     }
@@ -279,6 +295,7 @@ var targetCircles = new Array();
         circle.on('dblclick', function(evt){
           console.log('doubleclicked ' + this.level + ' ' + this.row);
           var buddies = getGroup(this.level,this.row);
+          console.log('Returned group');
           console.log(buddies);
           for (var i=0; i< buddies.length; i++) {
             targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
