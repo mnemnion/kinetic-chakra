@@ -81,7 +81,8 @@ function addPiece (that, type) {
       x: that.getX(),
       y: that.getY(),
       radius: chakraRadius/8,
-      fill: type
+      fill: type,
+      listening: false
     });
     newPiece.circleNumber = that.circleNumber;
     newPiece.circleLevel  = that.circleLevel;
@@ -122,21 +123,15 @@ for (var n=0; n<12; n++) {
 var targetCircles = new Array();
 
 //populate the targetCircles array with special targetCircles
+(function(){
 for (n=1; n<7; n++) {
-  (function(){
-    var i = n;
     var ring = Array();
-    ringRadius = chakraRadius * Math.sin(2*Math.PI*i/24); // formula of a chord
-    for (m=0; m<12; m++) {
-      (function(){
-        var i = m;
+    ringRadius = chakraRadius * Math.sin(2*Math.PI*n/24); // formula of a chord
+    for (m=0; m<12; m++) { 
         var circle = new Kinetic.Circle({
-          x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(i+n/2)/12),
-          y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(i+n/2)/12),
-          radius : chakraRadius/8,
-          fill : 'none',
-          stroke : 'none',
-          strokeWidth : 2,
+          x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
+          y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
+          radius : chakraRadius/8
         });
 //        console.log("Creating target " + n + " sub " + m);
 
@@ -161,25 +156,23 @@ for (n=1; n<7; n++) {
         });
 
         circle.on('mouseover', function(evt){
-          this.setStroke('black');
-          this.setStrokeWidth(4);
+          this.setStroke('green');
+          this.setStrokeWidth(3);
           targetLayer.draw();
         });
 
         circle.on('mouseleave', function(evt){
           this.setStroke('none');
-          this.setStrokeWidth(2);
           targetLayer.draw();
         });
 
       
         ring.push(circle);
-      })();
+
     }
   targetCircles.push(ring);
-  })();
 }
-
+}());
 
 var border = new Kinetic.Rect({
   x: 4,
