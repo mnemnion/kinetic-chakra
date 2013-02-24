@@ -76,33 +76,33 @@ var gameState = {
 
 
 
-getAdjacent = function(level, row) {
-  var adjacencies = Array();
+getAdjacent = function(level, row, circleArray) {
+  var adjacencies = Array()
   switch(level) {
     case 0:
       console.log("it's the inner circle");
-      adjacencies[0] = pieceArray[level+1][cycleTwelve(row, -1)];
-      adjacencies[1] = pieceArray[level+1][row];
-      adjacencies[2] = pieceArray[level][cycleTwelve(row, +5)];
-      adjacencies[3] = pieceArray[level][cycleTwelve(row, +7)];
+      adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[1] = circleArray[level+1][row];
+      adjacencies[2] = circleArray[level][cycleTwelve(row, +5)];
+      adjacencies[3] = circleArray[level][cycleTwelve(row, +7)];
       break;
     case 1:  
     case 2:
     case 3:
     case 4:
       console.log("one of the middle circles");
-      adjacencies[0] = pieceArray[level+1][cycleTwelve(row, -1)];
-      adjacencies[1] = pieceArray[level+1][row];
-      adjacencies[2] = pieceArray[level-1][cycleTwelve(row, +1)];
-      adjacencies[3] = pieceArray[level][row];   
+      adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[1] = circleArray[level+1][row];
+      adjacencies[2] = circleArray[level-1][cycleTwelve(row, +1)];
+      adjacencies[3] = circleArray[level][row];   
       break;
     case 5:
       console.log("the outer rim!");
       
-      adjacencies[0] = pieceArray[level][cycleTwelve(row, -1)];
-      adjacencies[1] = pieceArray[level][cycleTwelve(row, +1)];
-      adjacencies[2] = pieceArray[level-1][row];
-      adjacencies[3] = pieceArray[level-1][cycleTwelve(row,+1)];
+      adjacencies[0] = circleArray[level][cycleTwelve(row, -1)];
+      adjacencies[1] = circleArray[level][cycleTwelve(row, +1)];
+      adjacencies[2] = circleArray[level-1][row];
+      adjacencies[3] = circleArray[level-1][cycleTwelve(row,+1)];
       break;
     default:
       console.log("this shouldn't happen");
@@ -110,24 +110,35 @@ getAdjacent = function(level, row) {
   return adjacencies;
 };
 
+getAdjacentPieces = function(level, row) {
+  var pieces = getAdjacent(level, row, pieceArray);
+  return pieces;
+}
 
-getGroup = function(level, row) {
- 
+getAdjacentTargets = function(level,row) {
+  var targets = getAdjacent(level, row, targetCircles);
+  return targets;
+}
+
+
+getGroup = function(level, row, shade) {
+    if (shade === undefined) {
+      shade = pieceArray[level][row].getFill();
+    }
     var group = Array();
     var buddies = Array();
     var stager = Array();
     color = pieceArray[level][row].getFill();
-    if (color==='black' || color==='white'){
+    if (color===shade){
       group.push(pieceArray[level][row]);
       group[0].grouped = true;
-      buddies = getAdjacent(level, row);
-      console.log(buddies);
+      buddies = getAdjacentPieces(level, row, shade);
       for (var i=0; i < buddies.length; i++) {
         if (buddies[i] !== 'mt') {
-          if (buddies[i] !== 'mt' && buddies[i].getFill() === 'color' && buddies[i].grouped === false) {
+          if (buddies[i].getFill() === color && buddies[i].grouped === false) {
             buddies[i].grouped === true;
             group.push(buddies[i]);
-            stager = getGroup(buddies[i]);
+            stager = getGroup(buddies[i].level, buddies[i].row);
             for (var j=0; j < stager.length; j++) {
               group.push(stager[i]);
             }
@@ -267,8 +278,14 @@ var targetCircles = new Array();
 
         circle.on('dblclick', function(evt){
           console.log('doubleclicked ' + this.level + ' ' + this.row);
-          var buddies = getAdjacent(this.level,this.row);
+          var buddies = getGroup(this.level,this.row);
           console.log(buddies);
+          for (var i=0; i< buddies.length; i++) {
+            targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
+            targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(4);
+            
+          }
+          targetLayer.draw();
         });
   
         ring.push(circle);
