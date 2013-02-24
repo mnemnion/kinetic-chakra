@@ -74,15 +74,18 @@ gameState.calculateWin = function() {
 var chakraRing = new Array();
 var pieceArray = new Array();
 
-function addPiece (x,y, type) {
+function addPiece (that, type) {
   (function() {
     
     var newPiece = new Kinetic.Circle ({
-      x: x,
-      y: y,
+      x: that.getX(),
+      y: that.getY(),
       radius: chakraRadius/8,
       fill: type
     });
+    newPiece.circleNumber = that.circleNumber;
+    newPiece.circleLevel  = that.circleLevel;
+    gameState.board[newPiece.circleLevel][newPiece.circleNumber] = newPiece.getFill();
     pieceArray.push(newPiece);
     pieceLayer.add(newPiece);
     pieceLayer.draw();
@@ -144,13 +147,13 @@ for (n=1; n<7; n++) {
           if (gameState.board[this.circleLevel][this.circleNumber] === 'none') {
             if (!gameState.isSliding) {
               if (gameState.isBlackMove) {
-                this.setFill('black');
+                addPiece(this, 'black');
                 gameState.isBlackMove = false;
               } else {
-                this.setFill('white');
+                addPiece(this, 'white');
                 gameState.isBlackMove = true;
               }
-              gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
+ //             gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
               console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
               targetLayer.draw();
             }
@@ -169,10 +172,7 @@ for (n=1; n<7; n++) {
           targetLayer.draw();
         });
 
-        circle.on('dblclick', function(evt){
-          addPiece(this.getX(),this.getY(), 'red');
-          console.log("doubleclick detected");
-        })
+      
         ring.push(circle);
       })();
     }
@@ -205,18 +205,7 @@ for (n=0; n<targetCircles.length;n++) {
   }
 }
 
-var button = new Kinetic.Rect({
-  x: 200,
-  y: 200,
-  width: 50,
-  height: 50,
-  stroke: 'black',
-  strokeWidth: 4
-})
-
-pieceLayer.add(button);
-
-// add the layer to the stage
+// add the layers to the stage
 stage.add(backgroundLayer);
 stage.add(boardLayer);
 stage.add(targetLayer);
