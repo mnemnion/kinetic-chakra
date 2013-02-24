@@ -1,3 +1,4 @@
+(function(){
 var stage = new Kinetic.Stage({
     container: 'container',
     width: 640,
@@ -23,12 +24,31 @@ var chakraRadius = outerEdge.getRadius()/2;
 
 // Game Logic
 
+function cycleTwelve(value, addend) {
+  // may I protest a moment and say
+  // that this is what %
+  // is supposed to do
+  // in a math-respecting language
+  if (value <= 11 && value >= 0) {
+    if (addend >= 0) {
+      return((value+addend)%12)
+    } else if (-12 <= addend) {
+      result = value + addend; //remember in this case addend is negative.
+      if (result < 0) {
+        return (12+result);
+      } else {
+        return result;
+      }
+    } 
+  } 
+}
+
 var gameState = {
   isBlackMove: true,
   isSliding: false,
   blackCaptures: 0,
   whiteCaptures: 0
-}
+};
 
 gameState.board = new Array(6);
 
@@ -37,33 +57,67 @@ for (var n=0; n < 7; n++) {
   for (var m=0; m < 12; m++) {
     gameState.board[n][m] = 'none';
   } 
-}
+};
 
 
-gameState.getAdjacent = function(circleLevel, circleNumber) {
+gameState.getAdjacent = function(level, row) {
+  var adjacencies = Array();
+  switch(level) {
+    case 0:
+      console.log("it's the inner circle");
+      break;
+    case 1:  
+    case 2:
+    case 3:
+    case 4:
+      console.log("one of the middle circles");
+      adjacencies[0] = {
+        circleLevel: level+1,
+        circleRow: cycleTwelve(row, -1)
+      };
+      adjacencies[1] = {
+        circleLevel: level +1,
+        circleRow: row
+      };
+      adjacencies[2] = {
+        circleLevel: level -1,
+        circleRow: cycleTwelve(row,+1)
+      };
+      adjacencies[3] = {
+        circleLevel: level -1,
+        circleRow: row
+      }
+      break;
+    case 5:
+      console.log("the outer rim!");
+      break;
+    default:
+      console.log("this shouldn't happen");
+  }
+  return adjacencies;
+};
 
-}
 
-gameState.getGroup = function(circleLevel, circleNumber) {
+gameState.getGroup = function(circleLevel, circleRow) {
 
-}
+};
 
-gameState.getSlideable = function(circleLevel, circleNumber) {
+gameState.getSlideable = function(circleLevel, circleRow) {
   // return all points this piece can slide to.
 
-}
+};
 
 gameState.countLiberties = function(circleGroup) {
 
-}
+};
 
 gameState.isDead = function(circleGroup) {
 
-}
+};
 
 gameState.calculateWin = function() {
 
-}
+};
 
 // End Game Logic
 
@@ -84,9 +138,9 @@ function addPiece (that, type) {
       fill: type,
       listening: false
     });
-    newPiece.circleNumber = that.circleNumber;
+    newPiece.circleRow = that.circleRow;
     newPiece.circleLevel  = that.circleLevel;
-    gameState.board[newPiece.circleLevel][newPiece.circleNumber] = newPiece.getFill();
+    gameState.board[newPiece.circleLevel][newPiece.circleRow] = newPiece.getFill();
     pieceArray.push(newPiece);
     pieceLayer.add(newPiece);
     pieceLayer.draw();
@@ -95,9 +149,11 @@ function addPiece (that, type) {
 
 
 
+
+
 // populate chakraRing group with circles.
-for (var n=0; n<12; n++) {
-  (function() {
+(function() {
+  for (var n=0; n<12; n++) {
     var i = n;
     var color = '';
     if (i%2===0){
@@ -117,29 +173,28 @@ for (var n=0; n<12; n++) {
 
  //   console.log("creating ring " + i);
     chakraRing[i]=circle;
-  })();
 };
+  }());
 
 var targetCircles = new Array();
 
 //populate the targetCircles array with special targetCircles
 (function(){
-for (n=1; n<7; n++) {
+  for (n=1; n<7; n++) {
     var ring = Array();
     ringRadius = chakraRadius * Math.sin(2*Math.PI*n/24); // formula of a chord
     for (m=0; m<12; m++) { 
+
         var circle = new Kinetic.Circle({
           x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
           y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
           radius : chakraRadius/8
         });
-//        console.log("Creating target " + n + " sub " + m);
-
-        circle.circleLevel = n;
-        circle.circleNumber = m;
+        circle.circleLevel = n-1;
+        circle.circleRow = m;
 
         circle.on('click', function(evt){
-          if (gameState.board[this.circleLevel][this.circleNumber] === 'none') {
+          if (gameState.board[this.circleLevel][this.circleRow] === 'none') {
             if (!gameState.isSliding) {
               if (gameState.isBlackMove) {
                 addPiece(this, 'black');
@@ -148,8 +203,7 @@ for (n=1; n<7; n++) {
                 addPiece(this, 'white');
                 gameState.isBlackMove = true;
               }
- //             gameState.board[this.circleLevel][this.circleNumber] = this.getFill();
-              console.log(this.circleLevel + ' sub ' + this.circleNumber + ' is now ' + gameState.board[this.circleLevel][this.circleNumber]);
+              console.log(this.circleLevel + ' sub ' + this.circleRow + ' is now ' + gameState.board[this.circleLevel][this.circleRow]);
               targetLayer.draw();
             }
           }
@@ -166,9 +220,16 @@ for (n=1; n<7; n++) {
           targetLayer.draw();
         });
 
-      
+        circle.on('dblclick', function(evt){
+          var buddies = gameState.getAdjacent(this.circleLevel,this.circleRow);
+          console.log(buddies);
+          for (i = 0; i < buddies.length; i++) {
+            targetCircles[buddies[i].circleLevel][buddies[i].circleRow].setFill('lightgreen');
+          }
+          targetLayer.draw();
+        })
+  
         ring.push(circle);
-
     }
   targetCircles.push(ring);
 }
@@ -204,3 +265,5 @@ stage.add(boardLayer);
 stage.add(targetLayer);
 stage.add(pieceLayer);
 console.log("ready");
+
+}());
