@@ -65,6 +65,22 @@ gameState.getAdjacent = function(level, row) {
   switch(level) {
     case 0:
       console.log("it's the inner circle");
+      adjacencies[0] = {
+        circleLevel: level + 1,
+        circleRow: cycleTwelve(row, -1)
+      }
+      adjacencies[1] = {
+        circleLevel: level + 1,
+        circleRow: row
+      }
+      adjacencies[2] = {
+        circleLevel: level,
+        circleRow: cycleTwelve(row, +5)
+      }
+      adjacencies[3] = {
+        circleLevel: level,
+        circleRow: cycleTwelve(row, +7)
+      }
       break;
     case 1:  
     case 2:
@@ -90,6 +106,22 @@ gameState.getAdjacent = function(level, row) {
       break;
     case 5:
       console.log("the outer rim!");
+      adjacencies[0] = {
+        circleLevel : level,
+        circleRow : cycleTwelve(row, -1)
+      }
+      adjacencies[1] = {
+        circleLevel : level,
+        circleRow : cycleTwelve(row, +1)
+      }
+      adjacencies[2] = {
+        circleLevel: level -1,
+        circleRow: row
+      }
+      adjacencies[3] = {
+        circleLevel: level -1,
+        circleRow: row +1
+      }
       break;
     default:
       console.log("this shouldn't happen");
