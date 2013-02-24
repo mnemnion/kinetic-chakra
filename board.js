@@ -38,11 +38,26 @@ function cycleTwelve(value, addend) {
   // that this is what %
   // is supposed to do
   // in a math-respecting language
+ 
+  /* BETTER WAY TO DO IT
+      
+      This is what I get for coding around a bug that other 
+      people obviously have! Also, for doing brute algorithms
+      when what we want is actual math. 
+      The below torturous logic, which does have the advantage of
+      constraining the variables, acting as a basic sanity check,
+      can be generalized as follows:
+
+      return ((this%n)+n)%n;
+
+  */
+
+
   if (value <= 11 && value >= 0) {
     if (addend >= 0) {
       return((value+addend)%12)
     } else if (-12 <= addend) {
-      result = value + addend; //remember in this case addend is negative.
+      result = value + addend; // remember in this case addend is negative.
       if (result < 0) {
         return (12+result);
       } else {
@@ -66,63 +81,28 @@ getAdjacent = function(level, row) {
   switch(level) {
     case 0:
       console.log("it's the inner circle");
-      adjacencies[0] = {
-        level: level + 1,
-        row: cycleTwelve(row, -1)
-      }
-      adjacencies[1] = {
-        level: level + 1,
-        row: row
-      }
-      adjacencies[2] = {
-        level: level,
-        row: cycleTwelve(row, +5)
-      }
-      adjacencies[3] = {
-        level: level,
-        row: cycleTwelve(row, +7)
-      }
+      adjacencies[0] = pieceArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[1] = pieceArray[level+1][row];
+      adjacencies[2] = pieceArray[level][cycleTwelve(row, +5)];
+      adjacencies[3] = pieceArray[level][cycleTwelve(row, +7)];
       break;
     case 1:  
     case 2:
     case 3:
     case 4:
       console.log("one of the middle circles");
-      adjacencies[0] = {
-        level: level+1,
-        row: cycleTwelve(row, -1)
-      };
-      adjacencies[1] = {
-        level: level +1,
-        row: row
-      };
-      adjacencies[2] = {
-        level: level -1,
-        row: cycleTwelve(row,+1)
-      };
-      adjacencies[3] = {
-        level: level -1,
-        row: row
-      }
+      adjacencies[0] = pieceArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[1] = pieceArray[level+1][row];
+      adjacencies[2] = pieceArray[level-1][cycleTwelve(row, +1)];
+      adjacencies[3] = pieceArray[level][row];   
       break;
     case 5:
       console.log("the outer rim!");
-      adjacencies[0] = {
-        level : level,
-        row : cycleTwelve(row, -1)
-      }
-      adjacencies[1] = {
-        level : level,
-        row : cycleTwelve(row, +1)
-      }
-      adjacencies[2] = {
-        level: level -1,
-        row: row
-      }
-      adjacencies[3] = {
-        level: level -1,
-        row: row +1
-      }
+      
+      adjacencies[0] = pieceArray[level][cycleTwelve(row, -1)];
+      adjacencies[1] = pieceArray[level][cycleTwelve(row, +1)];
+      adjacencies[2] = pieceArray[level-1][row];
+      adjacencies[3] = pieceArray[level-1][cycleTwelve(row,+1)];
       break;
     default:
       console.log("this shouldn't happen");
@@ -135,19 +115,30 @@ getGroup = function(level, row) {
  
     var group = Array();
     var buddies = Array();
+    var stager = Array();
     color = pieceArray[level][row].getFill();
     if (color==='black' || color==='white'){
       group.push(pieceArray[level][row]);
+      group[0].grouped = true;
       buddies = getAdjacent(level, row);
+      console.log(buddies);
       for (var i=0; i < buddies.length; i++) {
-        
+        if (buddies[i] !== 'mt') {
+          if (buddies[i] !== 'mt' && buddies[i].getFill() === 'color' && buddies[i].grouped === false) {
+            buddies[i].grouped === true;
+            group.push(buddies[i]);
+            stager = getGroup(buddies[i]);
+            for (var j=0; j < stager.length; j++) {
+              group.push(stager[i]);
+            }
+          }
+        }
       }
       return(group);
     } else {
       console.log('empty space contains no group');
     }
 };
-
 
 
 getSlideable = function(level, row) {
@@ -195,6 +186,7 @@ function addPiece (that, type) {
     });
     newPiece.row = that.row;
     newPiece.level  = that.level;
+    newPiece.grouped = false;
     pieceArray[that.level][that.row] = newPiece;
     pieceLayer.add(newPiece);
     pieceLayer.draw();
@@ -274,7 +266,9 @@ var targetCircles = new Array();
         });
 
         circle.on('dblclick', function(evt){
-          console.log(getGroup(this.level,this.row));
+          console.log('doubleclicked ' + this.level + ' ' + this.row);
+          var buddies = getAdjacent(this.level,this.row);
+          console.log(buddies);
         });
   
         ring.push(circle);
