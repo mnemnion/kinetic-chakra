@@ -67,20 +67,20 @@ getAdjacent = function(level, row) {
     case 0:
       console.log("it's the inner circle");
       adjacencies[0] = {
-        circleLevel: level + 1,
-        circleRow: cycleTwelve(row, -1)
+        level: level + 1,
+        row: cycleTwelve(row, -1)
       }
       adjacencies[1] = {
-        circleLevel: level + 1,
-        circleRow: row
+        level: level + 1,
+        row: row
       }
       adjacencies[2] = {
-        circleLevel: level,
-        circleRow: cycleTwelve(row, +5)
+        level: level,
+        row: cycleTwelve(row, +5)
       }
       adjacencies[3] = {
-        circleLevel: level,
-        circleRow: cycleTwelve(row, +7)
+        level: level,
+        row: cycleTwelve(row, +7)
       }
       break;
     case 1:  
@@ -89,39 +89,39 @@ getAdjacent = function(level, row) {
     case 4:
       console.log("one of the middle circles");
       adjacencies[0] = {
-        circleLevel: level+1,
-        circleRow: cycleTwelve(row, -1)
+        level: level+1,
+        row: cycleTwelve(row, -1)
       };
       adjacencies[1] = {
-        circleLevel: level +1,
-        circleRow: row
+        level: level +1,
+        row: row
       };
       adjacencies[2] = {
-        circleLevel: level -1,
-        circleRow: cycleTwelve(row,+1)
+        level: level -1,
+        row: cycleTwelve(row,+1)
       };
       adjacencies[3] = {
-        circleLevel: level -1,
-        circleRow: row
+        level: level -1,
+        row: row
       }
       break;
     case 5:
       console.log("the outer rim!");
       adjacencies[0] = {
-        circleLevel : level,
-        circleRow : cycleTwelve(row, -1)
+        level : level,
+        row : cycleTwelve(row, -1)
       }
       adjacencies[1] = {
-        circleLevel : level,
-        circleRow : cycleTwelve(row, +1)
+        level : level,
+        row : cycleTwelve(row, +1)
       }
       adjacencies[2] = {
-        circleLevel: level -1,
-        circleRow: row
+        level: level -1,
+        row: row
       }
       adjacencies[3] = {
-        circleLevel: level -1,
-        circleRow: row +1
+        level: level -1,
+        row: row +1
       }
       break;
     default:
@@ -134,15 +134,23 @@ getAdjacent = function(level, row) {
 getGroup = function(level, row) {
  
     var group = Array();
+    var buddies = Array();
     color = pieceArray[level][row].getFill();
-    group.push(pieceArray[level][row]);
-    return(group);
-    //keep working from here
+    if (color==='black' || color==='white'){
+      group.push(pieceArray[level][row]);
+      buddies = getAdjacent(level, row);
+      for (var i=0; i < buddies.length; i++) {
+        
+      }
+      return(group);
+    } else {
+      console.log('empty space contains no group');
+    }
 };
 
 
 
-getSlideable = function(circleLevel, circleRow) {
+getSlideable = function(level, row) {
   // return all points this piece can slide to.
 
 };
@@ -185,9 +193,9 @@ function addPiece (that, type) {
       fill: type,
       listening: false
     });
-    newPiece.circleRow = that.circleRow;
-    newPiece.circleLevel  = that.circleLevel;
-    pieceArray[that.circleLevel][that.circleRow] = newPiece;
+    newPiece.row = that.row;
+    newPiece.level  = that.level;
+    pieceArray[that.level][that.row] = newPiece;
     pieceLayer.add(newPiece);
     pieceLayer.draw();
 }
@@ -235,11 +243,11 @@ var targetCircles = new Array();
           y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
           radius : chakraRadius/8
         });
-        circle.circleLevel = n-1;
-        circle.circleRow = m;
+        circle.level = n-1;
+        circle.row = m;
 
         circle.on('click', function(evt){
-          if (pieceArray[this.circleLevel][this.circleRow] === 'mt') {
+          if (pieceArray[this.level][this.row] === 'mt') {
             if (!gameState.isSliding) {
               if (gameState.isBlackMove) {
                 addPiece(this, 'black');
@@ -248,7 +256,7 @@ var targetCircles = new Array();
                 addPiece(this, 'white');
                 gameState.isBlackMove = true;
               }
-              console.log(this.circleLevel + ' sub ' + this.circleRow + ' is now ' + pieceArray[this.circleLevel][this.circleRow].getFill());
+              console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
               targetLayer.draw();
             }
           }
@@ -266,7 +274,7 @@ var targetCircles = new Array();
         });
 
         circle.on('dblclick', function(evt){
-          console.log(getGroup(this.circleLevel,this.circleRow));
+          console.log(getGroup(this.level,this.row));
         });
   
         ring.push(circle);
