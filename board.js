@@ -209,6 +209,20 @@ countLiberties = function(group) {
 
 killGroup = function(enemyGroup) {
   console.log("Bang! You're dead");
+  if(enemyGroup[0].getFill()==='black'){
+    gameState.whiteCaptures += enemyGroup.length;
+    console.log("White has captured " + gameState.whiteCaptures + " stones so far");
+  } else {
+    gameState.blackCaptures += enemyGroup.length;
+    console.log("Black has captured " + gameState.blackCaptures + " stones so far");
+  }
+    console.log("destroying:");
+    console.log(enemyGroup);
+  for (i=0; i<enemyGroup.length; i++) {
+    pieceArray[enemyGroup[i].level][enemyGroup[i].row] = 'mt';
+    enemyGroup[i].setFill('none');
+  }
+  pieceLayer.draw();
 }
 
 emanateKill = function(piece) {
