@@ -1,4 +1,4 @@
-(function(){
+//(function(){ 
 var stage = new Kinetic.Stage({
     container: 'container',
     width: 860,
@@ -72,6 +72,7 @@ var gameState = {
   isSliding: false,
   blackCaptures: 0,
   whiteCaptures: 0,
+  pieceIDs: 0,
   showAdjacents: false
 };
 
@@ -81,7 +82,7 @@ getAdjacent = function(level, row, circleArray) {
   var adjacencies = Array()
   switch(level) {
     case 0:
-      console.log("it's the inner circle");
+ //     console.log("it's the inner circle");
       adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
       adjacencies[2] = circleArray[level][cycleTwelve(row, +5)];
@@ -91,14 +92,14 @@ getAdjacent = function(level, row, circleArray) {
     case 2:
     case 3:
     case 4:
-      console.log("one of the middle circles");
+ //     console.log("one of the middle circles");
       adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
       adjacencies[2] = circleArray[level-1][cycleTwelve(row, +1)];
       adjacencies[3] = circleArray[level-1][row];   
       break;
     case 5:
-      console.log("the outer rim!");
+ //     console.log("the outer rim!");
       
       adjacencies[0] = circleArray[level][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level][cycleTwelve(row, +1)];
@@ -111,8 +112,9 @@ getAdjacent = function(level, row, circleArray) {
   return adjacencies;
 };
 
-getAdjacentPieces = function(level, row) {
-  var buddies = getAdjacent(level, row, pieceArray);
+getAdjacentPieces = function(piece) {
+
+  var buddies = getAdjacent(piece.level, piece.row, pieceArray);
   var pieces = Array();
   for (var i=0; i<buddies.length;i++) {
     if (buddies[i]!=='mt') {
@@ -120,53 +122,45 @@ getAdjacentPieces = function(level, row) {
     }
   }
   return pieces;
-}
+};
 
 getAdjacentTargets = function(piece) {
   var targets = getAdjacent(piece.level, piece.row, targetCircles);
   return targets;
-}
-
-/* 
-getGroup = function(level, row, shade) {
-    if (shade === undefined) {
-      shade = pieceArray[level][row].getFill();
-    } //if we don't know the color of the group, we do now.
-    var group = Array();
-    var buddies = Array();
-    var stager = Array();
-    color = pieceArray[level][row].getFill(); 
-    if (color===shade) { // are we looking at a piece of the right color?
-      group.push(pieceArray[level][row]); // good. let's add it.
-      buddies = getAdjacentPieces(level, row, shade);
-      console.log('collecting buddies');
-      console.log(buddies); // everything in here should be a piece.
-      for (var i=0; i < buddies.length; i++) {
-        if (buddies[i] !== 'mt') { // this should never happen
-          if (buddies[i].getFill() === color ) {
-            group.push(buddies[i]);
-            stager = getGroup(buddies[i].level, buddies[i].row);
-            for (var j=0; j < stager.length; j++) {
-              group.push(stager[i]);
-            }
-          }
-        } else {
-          console.log("there was an empty in your buddies")
-        }
-      }
-      var returnArray = Array();
-      for (var i=0; i<group.length; i++) {
-        if(group[i]!==undefined) {
-          returnArray.push(group[i]);
-        }
-      }
-      return(returnArray);
-    } else {
-      console.log('empty space contains no group');
-    }
 };
-*/
 
+
+var getGroup = function (piece, group, color) {
+  console.log(color);
+  console.log(group);
+  if (group === undefined) {
+    var group = Array();
+  } // create our container if we're at the top of the descent path
+  if (color === undefined) {
+    var color = piece.getFill();
+    console.log("color changed to "+ color);
+  }
+  if (color === piece.getFill()) {
+    group.push(piece); // add the piece in question.
+    var buddies = getAdjacentPieces(piece); // get all friends
+    console.log('buddies are:');
+    console.log(buddies);
+    for (var i=0; i<buddies.length;i++) {
+      var notInGroup = true;
+      for (var j=0; j<group.length;j++) {
+        if (buddies[i] === group[j]) {
+          console.log ("buddies[" + i + "] and group[" + j + "] are the same object");
+          notInGroup = false;
+        }
+      }
+      if (notInGroup === true) {
+        console.log('recurse');
+        getGroup(buddies[i],group,color);
+      }
+    } 
+  }
+  return group;
+};
 
 getSlideable = function(level, row) {
   // return all points this piece can slide to.
@@ -237,8 +231,10 @@ function addPiece (that, type) {
       y: that.getY(),
       radius: chakraRadius/8,
       fill: type,
-      listening: false
+      listening: false,
+      id: gameState.pieceIDs
     });
+    gameState.pieceIDs++;
     newPiece.row = that.row;
     newPiece.level  = that.level;
     pieceArray[that.level][that.row] = newPiece;
@@ -337,8 +333,8 @@ var targetCircles = new Array();
 
         circle.on('dblclick', function(evt){
           console.log('doubleclicked ' + this.level + ' ' + this.row);
-          var buddies = getGroup(this.level,this.row);
-          console.log('Returned group');
+          var buddies = getGroup(pieceArray[this.level][this.row]);
+          console.log('Returned group is:');
           console.log(buddies);
           for (var i=0; i< buddies.length; i++) {
             targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
@@ -385,4 +381,4 @@ stage.add(targetLayer);
 stage.add(pieceLayer);
 console.log("ready");
 
-}());
+//}());
