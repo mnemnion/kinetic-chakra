@@ -138,23 +138,23 @@ var getGroup = function (piece, group, color) {
   } // create our container if we're at the top of the descent path
   if (color === undefined) {
     var color = piece.getFill();
-    console.log("color changed to "+ color);
+ //   console.log("color changed to "+ color);
   }
   if (color === piece.getFill()) {
     group.push(piece); // add the piece in question.
     var buddies = getAdjacentPieces(piece); // get all friends
-    console.log('buddies are:');
-    console.log(buddies);
+//    console.log('buddies are:');
+//    console.log(buddies);
     for (var i=0; i<buddies.length;i++) {
       var notInGroup = true;
       for (var j=0; j<group.length;j++) {
         if (buddies[i] === group[j]) {
-          console.log ("buddies[" + i + "] and group[" + j + "] are the same object");
+ //         console.log ("buddies[" + i + "] and group[" + j + "] are the same object");
           notInGroup = false;
         }
       }
       if (notInGroup === true) {
-        console.log('recurse');
+ //       console.log('recurse');
         getGroup(buddies[i],group,color);
       }
     } 
@@ -222,6 +222,34 @@ var chakraRing = new Array();
   targetLayer.add(inspectButton);
   targetLayer.draw();
 }());
+
+(function() {
+  var groupsButton = new Kinetic.Rect ({
+    x: stage.getWidth()*4/5,
+    y: stage.getHeight()*2/5,
+    cornerRadius: 6,
+    height: 50,
+    width: 150,
+    fill: 'darkgreen',
+    stroke: 'black',
+    strokeWidth: 2
+  })
+
+  groupsButton.on('click', function(evt){
+    if (gameState.showGroups === false) {
+      gameState.showGroups = true;
+      this.setFill('lightgreen');
+    } else {
+      gameState.showGroups = false;
+      this.setFill('darkgreen');
+    }
+    targetLayer.draw();
+  });
+
+  targetLayer.add(groupsButton);
+  targetLayer.draw();
+}());
+
 
 
 
@@ -310,10 +338,21 @@ var targetCircles = new Array();
         circle.on('mouseover', function(evt){
           this.setStroke('red');
           this.setStrokeWidth(3);
-          if(gameState.showAdjacents===true) {
+          if(gameState.showAdjacents) {
             var buddies = getAdjacentTargets(this);
             for (var i=0; i<buddies.length; i++) {
               targetCircles[buddies[i].level][buddies[i].row].setStroke('lightgreen');
+              targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(2);
+
+            }
+          }
+          if(gameState.showGroups) {
+            if(pieceArray[this.level][this.row] !== 'mt'){
+              var group = getGroup(pieceArray[this.level][this.row]);
+              for (var i=0; i<group.length; i++) {
+                targetCircles[group[i].level][group[i].row].setStroke('blue');
+                targetCircles[group[i].level][group[i].row].setStrokeWidth(2);
+              }
             }
           }
           targetLayer.draw();
@@ -322,11 +361,21 @@ var targetCircles = new Array();
         circle.on('mouseleave', function(evt){
           this.setStroke('none');
           targetLayer.draw();
-          if(gameState.showAdjacents===true) {
+          if(gameState.showAdjacents) {
             var buddies = getAdjacentTargets(this);
             for (var i=0; i<buddies.length; i++) {
               targetCircles[buddies[i].level][buddies[i].row].setStroke('none');
             }
+          }
+          if(gameState.showGroups) {
+            if(pieceArray[this.level][this.row] !== 'mt') {
+              var group = getGroup(pieceArray[this.level][this.row]);
+              for (var i=0; i<group.length; i++) {
+                console.log('turning off circles')
+                targetCircles[group[i].level][group[i].row].setStroke('none');
+                targetCircles[group[i].level][group[i].row].setStrokeWidth(2);
+              }
+            }  
           }
           targetLayer.draw();
         });
