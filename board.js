@@ -73,7 +73,8 @@ var gameState = {
   blackCaptures: 0,
   whiteCaptures: 0,
   pieceIDs: 0,
-  showAdjacents: false
+  showAdjacents: false,
+  showGroups: false
 };
 
 
@@ -124,15 +125,15 @@ getAdjacentPieces = function(piece) {
   return pieces;
 };
 
-getAdjacentLiberties = function(piece) {
-  var buddies = getAdjacent(piece.level, piece.row, pieceArray);
-  var pieces = Array();
+getAdjacentLiberties = function(piece) { // takes a piece
+  var buddies = getAdjacent(piece.level, piece.row, targetCircles);
+  var emptyTargets = Array();
   for (var i=0; i<buddies.length;i++) {
-    if (buddies[i]==='mt') {
-      pieces.push(buddies[i]);
+    if (pieceArray[buddies[i].level][buddies[i].row]==='mt') {
+      emptyTargets.push(buddies[i]);
     }
   }
-  return pieces;
+  return emptyTargets; // returns TARGETS
 };
 
 
@@ -374,7 +375,7 @@ var targetCircles = new Array();
           this.setStroke('red');
           this.setStrokeWidth(3);
           if(gameState.showAdjacents) {
-            var buddies = getAdjacentTargets(this);
+            var buddies = getAdjacentLiberties(this);
             for (var i=0; i<buddies.length; i++) {
               targetCircles[buddies[i].level][buddies[i].row].setStroke('lightgreen');
               targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(2);
@@ -406,7 +407,7 @@ var targetCircles = new Array();
             if(pieceArray[this.level][this.row] !== 'mt') {
               var group = getGroup(pieceArray[this.level][this.row]);
               for (var i=0; i<group.length; i++) {
-                console.log('turning off circles')
+ //               console.log('turning off circles')
                 targetCircles[group[i].level][group[i].row].setStroke('none');
                 targetCircles[group[i].level][group[i].row].setStrokeWidth(2);
               }
