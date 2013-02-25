@@ -122,12 +122,12 @@ getAdjacentPieces = function(level, row) {
   return pieces;
 }
 
-getAdjacentTargets = function(level,row) {
-  var targets = getAdjacent(level, row, targetCircles);
+getAdjacentTargets = function(piece) {
+  var targets = getAdjacent(piece.level, piece.row, targetCircles);
   return targets;
 }
 
-
+/* 
 getGroup = function(level, row, shade) {
     if (shade === undefined) {
       shade = pieceArray[level][row].getFill();
@@ -138,15 +138,13 @@ getGroup = function(level, row, shade) {
     color = pieceArray[level][row].getFill(); 
     if (color===shade) { // are we looking at a piece of the right color?
       group.push(pieceArray[level][row]); // good. let's add it.
-      group[group.length-1].grouped = true; // now let's group the piece
       buddies = getAdjacentPieces(level, row, shade);
       console.log('collecting buddies');
       console.log(buddies); // everything in here should be a piece.
       for (var i=0; i < buddies.length; i++) {
         if (buddies[i] !== 'mt') { // this should never happen
-          if (buddies[i].getFill() === color && buddies[i].grouped === false) {
+          if (buddies[i].getFill() === color ) {
             group.push(buddies[i]);
-            group[group.length-1].grouped = true;
             stager = getGroup(buddies[i].level, buddies[i].row);
             for (var j=0; j < stager.length; j++) {
               group.push(stager[i]);
@@ -167,6 +165,7 @@ getGroup = function(level, row, shade) {
       console.log('empty space contains no group');
     }
 };
+*/
 
 
 getSlideable = function(level, row) {
@@ -242,7 +241,6 @@ function addPiece (that, type) {
     });
     newPiece.row = that.row;
     newPiece.level  = that.level;
-    newPiece.grouped = false;
     pieceArray[that.level][that.row] = newPiece;
     pieceLayer.add(newPiece);
     pieceLayer.draw();
@@ -314,10 +312,10 @@ var targetCircles = new Array();
         });
 
         circle.on('mouseover', function(evt){
-          this.setStroke('green');
+          this.setStroke('red');
           this.setStrokeWidth(3);
           if(gameState.showAdjacents===true) {
-            var buddies = getAdjacentTargets(this.level,this.row);
+            var buddies = getAdjacentTargets(this);
             for (var i=0; i<buddies.length; i++) {
               targetCircles[buddies[i].level][buddies[i].row].setStroke('lightgreen');
             }
@@ -329,7 +327,7 @@ var targetCircles = new Array();
           this.setStroke('none');
           targetLayer.draw();
           if(gameState.showAdjacents===true) {
-            var buddies = getAdjacentTargets(this.level,this.row);
+            var buddies = getAdjacentTargets(this);
             for (var i=0; i<buddies.length; i++) {
               targetCircles[buddies[i].level][buddies[i].row].setStroke('none');
             }
