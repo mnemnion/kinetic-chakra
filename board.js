@@ -73,8 +73,8 @@ var gameState = {
   blackCaptures: 0,
   whiteCaptures: 0,
   pieceIDs: 0,
-  showAdjacents: false,
-  showGroups: false
+  showAdjacents: true,
+  showGroups: true
 };
 
 
@@ -144,8 +144,8 @@ getAdjacentTargets = function(piece) {
 
 
 var getGroup = function (piece, group, color) {
-  console.log(color);
-  console.log(group);
+ // console.log(color);
+ // console.log(group);
   if (group === undefined) {
     var group = Array();
   } // create our container if we're at the top of the descent path
@@ -182,8 +182,12 @@ getSlideable = function(piece) {
 
 countLiberties = function(group) {
   var libArray = Array();
+  console.log("Counting liberties in:")
+  console.log(group);
   for (var i=0; i<group.length; i++) {
     adjacencies = getAdjacentLiberties(group[i]);
+    console.log('adjacent groups:');
+    console.log(adjacencies);
     for (var j=0; j<adjacencies.length; j++) {
       var notInGroup = true;
       for (var m=0; m<libArray.length;m++) {
@@ -195,28 +199,30 @@ countLiberties = function(group) {
         libArray.push(adjacencies[j]);
       }
     }
-    if (libArray.length >=1) {
+  }
+  if (libArray.length >=1) {
       return libArray.length
     } else {
       return 0;
     }
-  }
 };
 
-isDead = function(circleGroup) {
-  // note to self: 
-  // it is quite possible that groups
-  // will get collected twice,
-  // so we need to kill them the first time,
-  // making it impossible to kill them again. 
-  //
-  // in particular, if a piece is placed ajacent to
-  // two pieces in the same killable group, that group
-  // could be collected twice. I can think of ways to avoid
-  // that, which is probably the better thing to do. hmm.
-};
+killGroup = function(enemyGroup) {
+  console.log("Bang! You're dead");
+}
 
 emanateKill = function(piece) {
+  touching = getAdjacentPieces(piece);
+  for (var i=0; i<touching.length; i++) {
+    if (touching[i].getFill() !== piece.getFill()) {
+      enemyGroup = getGroup(touching[i]);
+      atari = countLiberties(enemyGroup);
+      console.log("Number of liberties is " + atari);
+      if (atari===0) {
+        killGroup(enemyGroup);
+      }
+    }
+  }
 
 };
 
@@ -244,6 +250,10 @@ var chakraRing = new Array();
     strokeWidth: 2
   })
 
+  if (gameState.showAdjacents) {
+    inspectButton.setFill('red');
+  }
+
   inspectButton.on('click', function(evt){
     if (gameState.showAdjacents === false) {
       gameState.showAdjacents = true;
@@ -270,6 +280,10 @@ var chakraRing = new Array();
     stroke: 'black',
     strokeWidth: 2
   })
+
+  if (gameState.showGroups) {
+    groupsButton.setFill('lightgreen');
+  }
 
   groupsButton.on('click', function(evt){
     if (gameState.showGroups === false) {
@@ -303,6 +317,7 @@ function addPiece (that, type) {
     newPiece.level  = that.level;
     pieceArray[that.level][that.row] = newPiece;
     pieceLayer.add(newPiece);
+    emanateKill(newPiece);
     pieceLayer.draw();
 }
 
@@ -364,7 +379,7 @@ var targetCircles = new Array();
               } else {
                 addPiece(this, 'white');
                 gameState.isBlackMove = true;
-              }
+              };
               console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
               targetLayer.draw();
             }
@@ -421,7 +436,7 @@ var targetCircles = new Array();
           var buddies = getGroup(pieceArray[this.level][this.row]);
           console.log('Returned group is:');
           console.log(buddies);
-          console.log("Number of liberties: " + getAdjacentLiberties(buddies));
+          console.log("Number of liberties: " + countLiberties(buddies));
           for (var i=0; i< buddies.length; i++) {
             targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
             targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(4);
