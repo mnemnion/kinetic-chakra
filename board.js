@@ -124,6 +124,18 @@ getAdjacentPieces = function(piece) {
   return pieces;
 };
 
+getAdjacentLiberties = function(piece) {
+  var buddies = getAdjacent(piece.level, piece.row, pieceArray);
+  var pieces = Array();
+  for (var i=0; i<buddies.length;i++) {
+    if (buddies[i]==='mt') {
+      pieces.push(buddies[i]);
+    }
+  }
+  return pieces;
+};
+
+
 getAdjacentTargets = function(piece) {
   var targets = getAdjacent(piece.level, piece.row, targetCircles);
   return targets;
@@ -162,13 +174,32 @@ var getGroup = function (piece, group, color) {
   return group;
 };
 
-getSlideable = function(level, row) {
+getSlideable = function(piece) {
   // return all points this piece can slide to.
 
 };
 
-countLiberties = function(circleGroup) {
-
+countLiberties = function(group) {
+  var libArray = Array();
+  for (var i=0; i<group.length; i++) {
+    adjacencies = getAdjacentLiberties(group[i]);
+    for (var j=0; j<adjacencies.length; j++) {
+      var notInGroup = true;
+      for (var m=0; m<libArray.length;m++) {
+        if (libArray[m] === adjacencies[j]) {
+          notInGroup = false;
+        }
+      }
+      if (notInGroup) {
+        libArray.push(adjacencies[j]);
+      }
+    }
+    if (libArray.length >=1) {
+      return libArray.length
+    } else {
+      return 0;
+    }
+  }
 };
 
 isDead = function(circleGroup) {
@@ -182,6 +213,10 @@ isDead = function(circleGroup) {
   // two pieces in the same killable group, that group
   // could be collected twice. I can think of ways to avoid
   // that, which is probably the better thing to do. hmm.
+};
+
+emanateKill = function(piece) {
+
 };
 
 calculateWin = function() {
@@ -385,6 +420,7 @@ var targetCircles = new Array();
           var buddies = getGroup(pieceArray[this.level][this.row]);
           console.log('Returned group is:');
           console.log(buddies);
+          console.log("Number of liberties: " + getAdjacentLiberties(buddies));
           for (var i=0; i< buddies.length; i++) {
             targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
             targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(4);
