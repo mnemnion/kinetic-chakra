@@ -332,6 +332,23 @@ function addPiece (that, type) {
     pieceArray[that.level][that.row] = newPiece;
     pieceLayer.add(newPiece);
     emanateKill(newPiece);
+     // check for four surrounding enemies
+    noAtari = getAdjacentPieces(newPiece);
+    var isOk = true;
+    if (noAtari.length === 4) {
+      console.log("Getting crowded in here");
+      isOk = false;
+      for (var i=0; i<noAtari.length; i++) {
+        if (noAtari[i].getFill()===type) {
+          isOk = true;
+        }
+      }
+    }
+    if (isOk === false) {
+      killGroup([newPiece]);  
+      gameState.isBlackMove = ! gameState.isBlackMove;
+    }
+    gameState.isBlackMove = ! gameState.isBlackMove;
     pieceLayer.draw();
 }
 
@@ -389,10 +406,8 @@ var targetCircles = new Array();
             if (!gameState.isSliding) {
               if (gameState.isBlackMove) {
                 addPiece(this, 'black');
-                gameState.isBlackMove = false;
               } else {
                 addPiece(this, 'white');
-                gameState.isBlackMove = true;
               };
               console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
               targetLayer.draw();
