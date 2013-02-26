@@ -305,18 +305,10 @@ function addPiece (that, type) {
     pieceLayer.add(newPiece);
     emanateKill(newPiece);
      // check for four surrounding enemies
-    noAtari = getAdjacentPieces(newPiece);
+    noAtari = getGroup(newPiece);
     var isOk = true;
-    if (noAtari.length === 4) {
-      console.log("Getting crowded in here");
-      isOk = false;
-      for (var i=0; i<noAtari.length; i++) {
-        if (noAtari[i].getFill()===type) {
-          isOk = true;
-        }
-      }
-    }
-    if (isOk === false) {
+    numLiberties = countLiberties(noAtari);
+    if (numLiberties === 0) {
       killGroup([newPiece]);  
     } else {
       gameState.nextTurn();
