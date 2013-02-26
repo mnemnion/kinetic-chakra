@@ -81,6 +81,7 @@ var gameState = {
 
 gameState.nextTurn = function() {
   this.isBlackMove = ! this.isBlackMove;
+  flipWhiteBlack();
 }
 
 getAdjacent = function(level, row, circleArray) {
@@ -353,8 +354,11 @@ var makeFlipper = function() {
   blackCircle.moveToTop();
   targetLayer.draw;
   var flipIt = function() {
-    //do something;
-    console.log("do me!");
+    if (gameState.isBlackMove) {
+      blackCircle.moveToTop();
+    } else {
+      whiteCircle.moveToTop();
+    }
   }
   return flipIt;
 }
