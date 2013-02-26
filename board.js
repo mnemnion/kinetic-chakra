@@ -5,6 +5,23 @@ var gameStage = new Kinetic.Stage({
     height: 640,
 });
 
+var gameState = {
+  numCircles: 12,
+  isBlackMove: true,
+  isSliding: false,
+  isMyMove: true,
+  blackCaptures: 0,
+  whiteCaptures: 0,
+  pieceIDs: 0,
+  showAdjacents: true,
+  showGroups: true
+};
+
+gameState.nextTurn = function() {
+  this.isBlackMove = ! this.isBlackMove;
+  flipWhiteBlack();
+}
+
 var boardLayer = new Kinetic.Layer();
 var backgroundLayer = new Kinetic.Layer();
 var targetLayer = new Kinetic.Layer();
@@ -26,14 +43,14 @@ var pieceArray = new Array();
 
 for (i=0; i < 6; i++) {
   pieceArray[i] = new Array();
-  for(j=0; j < 12; j++) {
+  for(j=0; j < gameState.numCircles; j++) {
     pieceArray[i].push('mt');
   }
 }
 
 // Game Logic
 
-function cycleTwelve(value, addend) {
+function cycleNumCircles(value, addend) {
   // may I protest a moment and say
   // that this is what %
   // is supposed to do
@@ -53,13 +70,13 @@ function cycleTwelve(value, addend) {
   */
 
 
-  if (value <= 11 && value >= 0) {
+  if (value <= gameState.numCircles -1 && value >= 0) {
     if (addend >= 0) {
-      return((value+addend)%12)
-    } else if (-12 <= addend) {
+      return((value+addend)%gameState.numCircles)
+    } else if (-gameState.numCircles <= addend) {
       result = value + addend; // remember in this case addend is negative.
       if (result < 0) {
-        return (12+result);
+        return (gameState.numCircles+result);
       } else {
         return result;
       }
@@ -68,45 +85,31 @@ function cycleTwelve(value, addend) {
 }
 
 
-var gameState = {
-  isBlackMove: true,
-  isSliding: false,
-  isMyMove: true,
-  blackCaptures: 0,
-  whiteCaptures: 0,
-  pieceIDs: 0,
-  showAdjacents: true,
-  showGroups: true
-};
 
-gameState.nextTurn = function() {
-  this.isBlackMove = ! this.isBlackMove;
-  flipWhiteBlack();
-}
 
 getAdjacent = function(level, row, circleArray) {
   var adjacencies = Array()
   switch(level) {
     case 0:
-      adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[0] = circleArray[level+1][cycleNumCircles(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
-      adjacencies[2] = circleArray[level][cycleTwelve(row, +5)];
-      adjacencies[3] = circleArray[level][cycleTwelve(row, +7)];
+      adjacencies[2] = circleArray[level][cycleNumCircles(row, +5)];
+      adjacencies[3] = circleArray[level][cycleNumCircles(row, +7)];
       break;
     case 1:  
     case 2:
     case 3:
     case 4:
-      adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
+      adjacencies[0] = circleArray[level+1][cycleNumCircles(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
-      adjacencies[2] = circleArray[level-1][cycleTwelve(row, +1)];
+      adjacencies[2] = circleArray[level-1][cycleNumCircles(row, +1)];
       adjacencies[3] = circleArray[level-1][row];   
       break;
     case 5:
-      adjacencies[0] = circleArray[level][cycleTwelve(row, -1)];
-      adjacencies[1] = circleArray[level][cycleTwelve(row, +1)];
+      adjacencies[0] = circleArray[level][cycleNumCircles(row, -1)];
+      adjacencies[1] = circleArray[level][cycleNumCircles(row, +1)];
       adjacencies[2] = circleArray[level-1][row];
-      adjacencies[3] = circleArray[level-1][cycleTwelve(row,+1)];
+      adjacencies[3] = circleArray[level-1][cycleNumCircles(row,+1)];
       break;
     default:
       console.log("this shouldn't happen");
@@ -187,7 +190,7 @@ var cycleArray = function(toBeCycled, index, numTimes) {
   return catcher;
 };
 
-console.log(cycleArray([1,2,3],1,11));
+console.log(cycleArray([1,2,3],1,gameState.numCircles -1));
 
 getChakras = function(piece) {
   // returns all points on both chakras the piece is on.
@@ -198,17 +201,17 @@ getChakras = function(piece) {
   if (piece.level === 5) {
     //handle the outer ring exception
     for (i = 0; i < myCounterclockwise.length; i++) {
-      myCounterclockwise[i] = [5, cycleTwelve(i,piece.row)];
+      myCounterclockwise[i] = [5, cycleNumCircles(i,piece.row)];
     }
   } else {
     for (i = 0; i < myCounterclockwise.length; i++) {
-      myCounterclockwise[i] = [myCounterclockwise[i][0],cycleTwelve(myCounterclockwise[i][1],piece.level)];
+      myCounterclockwise[i] = [myCounterclockwise[i][0],cycleNumCircles(myCounterclockwise[i][1],piece.level)];
     }
   }
   var chakras = [[],[]];
   for (i=0; i<myClockwise.length; i++) {
-    chakras[0][i] = targetArray[myClockwise[i][0]][cycleTwelve(myClockwise[i][1],piece.row)]; // >.<   
-    chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleTwelve(myCounterclockwise[i][1],piece.row)];
+    chakras[0][i] = targetArray[myClockwise[i][0]][cycleNumCircles(myClockwise[i][1],piece.row)]; // >.<   
+    chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleNumCircles(myCounterclockwise[i][1],piece.row)];
   }
   return chakras;
 };
@@ -418,7 +421,7 @@ var whiteSymbol = new Kinetic.Circle ({
 
 // populate chakraRing group with circles.
 (function() {
-  for (var n=0; n<12; n++) {
+  for (var n=0; n<gameState.numCircles; n++) {
     var i = n;
     var color = '';
     if (i%2===0){
@@ -428,8 +431,8 @@ var whiteSymbol = new Kinetic.Circle ({
     };
 
     var circle = new Kinetic.Circle({
-      x: gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
-      y: gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
+      x: gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles),
+      y: gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
       radius: chakraRadius,
       fill: 'none',
       stroke: color,
@@ -446,12 +449,12 @@ var targetArray = new Array();
 (function(){
   for (n=1; n<7; n++) {
     var ring = Array();
-    ringRadius = chakraRadius * Math.sin(2*Math.PI*n/24); // formula of a chord
-    for (m=0; m<12; m++) { 
+    ringRadius = chakraRadius * Math.sin(2*Math.PI*n/gameState.numCircles/2); // formula of a chord
+    for (m=0; m<gameState.numCircles; m++) { 
 
       var circle = new Kinetic.Circle({
-        x : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
-        y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
+        x : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/gameState.numCircles),
+        y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
         radius : chakraRadius/8,
         fill: 'none',
         stroke: 'none',
