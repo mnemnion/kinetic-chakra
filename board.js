@@ -88,7 +88,6 @@ getAdjacent = function(level, row, circleArray) {
   var adjacencies = Array()
   switch(level) {
     case 0:
- //     console.log("it's the inner circle");
       adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
       adjacencies[2] = circleArray[level][cycleTwelve(row, +5)];
@@ -98,15 +97,12 @@ getAdjacent = function(level, row, circleArray) {
     case 2:
     case 3:
     case 4:
- //     console.log("one of the middle circles");
       adjacencies[0] = circleArray[level+1][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level+1][row];
       adjacencies[2] = circleArray[level-1][cycleTwelve(row, +1)];
       adjacencies[3] = circleArray[level-1][row];   
       break;
     case 5:
- //     console.log("the outer rim!");
-      
       adjacencies[0] = circleArray[level][cycleTwelve(row, -1)];
       adjacencies[1] = circleArray[level][cycleTwelve(row, +1)];
       adjacencies[2] = circleArray[level-1][row];
@@ -149,30 +145,23 @@ getAdjacentTargets = function(piece) {
 
 
 var getGroup = function (piece, group, color) {
- // console.log(color);
- // console.log(group);
   if (group === undefined) {
     var group = Array();
   } // create our container if we're at the top of the descent path
   if (color === undefined) {
     var color = piece.getFill();
- //   console.log("color changed to "+ color);
   }
   if (color === piece.getFill()) {
     group.push(piece); // add the piece in question.
     var buddies = getAdjacentPieces(piece); // get all friends
- //    console.log('buddies are:');
- //    console.log(buddies);
     for (var i=0; i<buddies.length;i++) {
       var notInGroup = true;
       for (var j=0; j<group.length;j++) {
         if (buddies[i] === group[j]) {
- //         console.log ("buddies[" + i + "] and group[" + j + "] are the same object");
           notInGroup = false;
         }
       }
       if (notInGroup === true) {
- //       console.log('recurse');
         getGroup(buddies[i],group,color);
       }
     } 
@@ -204,8 +193,8 @@ getChakras = function(piece) {
   // returns all points on both chakras the piece is on.
   var clockwiseCircle = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[4,1],[3,2],[2,3],[1,4],[0,5]];
   var counterclockwiseCircle = [[0,0],[1,11],[2,10],[3,9],[4,8],[5,7],[4,7],[3,7],[2,7],[1,7],[0,7]];
-  var myClockwise = cycleArray (clockwiseCircle, piece.level, 12);
-  var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 12);
+  var myClockwise = cycleArray (clockwiseCircle, piece.level, 11);
+  var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 11);
   if (piece.level === 5) {
     //handle the outer ring exception
     for (i = 0; i < myCounterclockwise.length; i++) {
@@ -217,7 +206,7 @@ getChakras = function(piece) {
     }
   }
   var chakras = [[],[]];
-  for (i=0; i<12; i++) {
+  for (i=0; i<myClockwise.length; i++) {
     chakras[0][i] = targetArray[myClockwise[i][0]][cycleTwelve(myClockwise[i][1],piece.row)]; // >.<   
     chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleTwelve(myCounterclockwise[i][1],piece.row)];
   }
@@ -231,12 +220,8 @@ getSlideable = function(piece) {
 
 countLiberties = function(group) {
   var libArray = Array();
-  console.log("Counting liberties in:")
-  console.log(group);
   for (var i=0; i<group.length; i++) {
     adjacencies = getAdjacentLiberties(group[i]);
-    console.log('adjacent groups:');
-    console.log(adjacencies);
     for (var j=0; j<adjacencies.length; j++) {
       var notInGroup = true;
       for (var m=0; m<libArray.length;m++) {
@@ -280,7 +265,6 @@ emanateKill = function(piece) {
     if (touching[i].getFill() !== piece.getFill()) {
       enemyGroup = getGroup(touching[i]);
       atari = countLiberties(enemyGroup);
-      console.log("Number of liberties is " + atari);
       if (atari===0) {
         killGroup(enemyGroup);
       }
@@ -452,7 +436,6 @@ var whiteSymbol = new Kinetic.Circle ({
       strokeWidth: 4
     });
 
- //   console.log("creating ring " + i);
     chakraRing[i]=circle;
   };
 }());
@@ -561,6 +544,9 @@ var targetArray = new Array();
           targetArray[buddies[i].level][buddies[i].row].setStroke('red');
           targetArray[buddies[i].level][buddies[i].row].setStrokeWidth(4);
         }
+        var chakras = getChakras(this);
+        console.log('chakras are');
+        console.log(chakras);
         targetLayer.draw();
       });
 
@@ -589,7 +575,6 @@ backgroundLayer.add(border);
 
 for (n=0; n<targetArray.length;n++) {
   for (m=0; m<targetArray[n].length; m++) {
-//    console.log("adding targetArray " + n + " sub " + m);
     targetLayer.add(targetArray[n][m]);
   }
 }
