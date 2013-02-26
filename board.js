@@ -202,17 +202,27 @@ console.log(cycleArray([1,2,3],1,11));
 
 getChakras = function(piece) {
   // returns all points on both chakras the piece is on.
-  var clockwiseCircle = [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0]];
+  var clockwiseCircle = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[4,1],[3,2],[2,3],[1,4],[0,5]];
   var counterclockwiseCircle = [[0,0],[1,11],[2,10],[3,9],[4,8],[5,7],[4,7],[3,7],[2,7],[1,7],[0,7]];
   var myClockwise = cycleArray (clockwiseCircle, piece.level, 12);
   var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 12);
-  console.log(myClockwise);
+  if (piece.level === 5) {
+    //handle the outer ring exception
+    for (i = 0; i < myCounterclockwise.length; i++) {
+      myCounterclockwise[i] = [5, cycleTwelve(i,piece.row)];
+    }
+    console.log("hit outer ring, returned:");
+    console.log(myCounterclockwise);
+  } else {
+    for (i = 0; i < myCounterclockwise.length; i++) {
+      myCounterclockwise[i] = [myCounterclockwise[i][0],cycleTwelve(myCounterclockwise[i][1],piece.level)];
+    }
+  }
   var chakras = [[],[]];
   for (i=0; i<12; i++) {
-    chakras[0][i] = targetArray[myClockwise[i][0]][(myClockwise[i][1]+piece.row)]; // >.<   
-    chakras[1][i] = targetArray[myCounterclockwise[i][0]][(myCounterclockwise[i][1]+piece.row)];
+    chakras[0][i] = targetArray[myClockwise[i][0]][cycleTwelve(myClockwise[i][1],piece.row)]; // >.<   
+    chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleTwelve(myCounterclockwise[i][1],piece.row)];
   }
-  console.log(chakras[0]);
   return chakras;
 };
 
@@ -465,15 +475,14 @@ var targetArray = new Array();
         this.setStroke('red');
         this.setStrokeWidth(3);
         if(gameState.showAdjacents) {
-          var chakras = getChakras(this);
-          console.log("Chakras:");
-          console.log(chakras);
-          var buddies = chakras[0].concat(chakras[1]);
-          console.log(buddies);
-          for (var i=0; i<buddies.length; i++) {
-            if(buddies[i] !== undefined) {
-              buddies[i].setStroke('lightgreen');
-              buddies[i].setStrokeWidth(2);
+          var buddies = getChakras(this);
+
+          for (var i=0; i<buddies[0].length; i++) {
+            if(buddies[0][i] !== undefined) {
+              buddies[0][i].setStroke('lightgreen');
+              buddies[0][i].setStrokeWidth(2);
+              buddies[1][i].setStroke('lightblue');
+              buddies[1][i].setStrokeWidth(2);
             } else {
               console.log("undefined targetCircle found in getChakras return value");
             }
@@ -496,10 +505,19 @@ var targetArray = new Array();
         this.setStroke('none');
         targetLayer.draw();
         if(gameState.showAdjacents) {
-          var buddies = getAdjacentTargets(this);
-          for (var i=0; i<buddies.length; i++) {
-            targetArray[buddies[i].level][buddies[i].row].setStroke('none');
+          var buddies = getChakras(this);
+
+          for (var i=0; i<buddies[0].length; i++) {
+            if(buddies[0][i] !== undefined) {
+              buddies[0][i].setStroke('none');
+              buddies[0][i].setStrokeWidth(2);
+              buddies[1][i].setStroke('none');
+              buddies[1][i].setStrokeWidth(2);
+            } else {
+              console.log("undefined targetCircle found in getChakras return value");
+            }
           }
+          targetLayer.draw();
         }
         if(gameState.showGroups) {
           if(pieceArray[this.level][this.row] !== 'mt') {
