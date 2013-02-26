@@ -1,5 +1,5 @@
 //(function(){ 
-var stage = new Kinetic.Stage({
+var gameStage = new Kinetic.Stage({
     container: 'container',
     width: 860,
     height: 640,
@@ -12,9 +12,9 @@ var pieceLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
-  x: stage.getHeight() / 2,
-  y: stage.getHeight() / 2,
-  radius: stage.getHeight()/2 - 0.1*stage.getHeight()/2,
+  x: gameStage.getHeight() / 2,
+  y: gameStage.getHeight() / 2,
+  radius: gameStage.getHeight()/2 - 0.1*gameStage.getHeight()/2,
   fill: 'none',
   stroke: 'none',
   strokeWidth: 4
@@ -67,12 +67,6 @@ function cycleTwelve(value, addend) {
   } 
 }
 
-var verboseLog = function (message) {
-  var verbose = true;
-  if (verbose) {
-    console.log(message)
-  }
-}
 
 var gameState = {
   isBlackMove: true,
@@ -204,7 +198,7 @@ var cycleArray = function(toBeCycled, index, numTimes) {
   return catcher;
 };
 
-verboseLog(cycleArray([1,2,3],1,11));
+console.log(cycleArray([1,2,3],1,11));
 
 getChakras = function(piece) {
   // returns all points on both chakras the piece is on.
@@ -212,13 +206,13 @@ getChakras = function(piece) {
   var counterclockwiseCircle = [[0,0],[1,11],[2,10],[3,9],[4,8],[5,7],[4,7],[3,7],[2,7],[1,7],[0,7]];
   var myClockwise = cycleArray (clockwiseCircle, piece.level, 12);
   var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 12);
-  verboseLog(myClockwise);
+  console.log(myClockwise);
   var chakras = [[],[]];
   for (i=0; i<12; i++) {
-    chakras[0][i] = targetArray[myClockwise[i][0]][(myClockwise[i][1])+piece.row]; // >.<   
+    chakras[0][i] = targetArray[myClockwise[i][0]][(myClockwise[i][1]+piece.row)]; // >.<   
     chakras[1][i] = targetArray[myCounterclockwise[i][0]][(myCounterclockwise[i][1]+piece.row)];
   }
-  verboseLog(chakras[0]);
+  console.log(chakras[0]);
   return chakras;
 };
 
@@ -336,8 +330,8 @@ var chakraRing = new Array();
 
 (function() {
   var inspectButton = new Kinetic.Rect ({
-    x: stage.getWidth()*4/5,
-    y: stage.getHeight()*1/5,
+    x: gameStage.getWidth()*4/5,
+    y: gameStage.getHeight()*1/5,
     cornerRadius: 6,
     height: 50,
     width: 150,
@@ -367,8 +361,8 @@ var chakraRing = new Array();
 
 (function() {
   var groupsButton = new Kinetic.Rect ({
-    x: stage.getWidth()*4/5,
-    y: stage.getHeight()*2/5,
+    x: gameStage.getWidth()*4/5,
+    y: gameStage.getHeight()*2/5,
     cornerRadius: 6,
     height: 50,
     width: 150,
@@ -420,8 +414,8 @@ var whiteSymbol = new Kinetic.Circle ({
     };
 
     var circle = new Kinetic.Circle({
-      x: stage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
-      y: stage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
+      x: gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/12),
+      y: gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/12),
       radius: chakraRadius,
       fill: 'none',
       stroke: color,
@@ -443,8 +437,8 @@ var targetArray = new Array();
     for (m=0; m<12; m++) { 
 
       var circle = new Kinetic.Circle({
-        x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
-        y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
+        x : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
+        y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
         radius : chakraRadius/8,
         fill: 'none',
         stroke: 'none',
@@ -461,7 +455,7 @@ var targetArray = new Array();
             } else {
               addPiece(this, 'white');
             };
-            verboseLog(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
+            console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
             targetLayer.draw();
           }
         }
@@ -472,14 +466,19 @@ var targetArray = new Array();
         this.setStrokeWidth(3);
         if(gameState.showAdjacents) {
           var chakras = getChakras(this);
-          var buddies = Array();
-          buddies.concat(chakras[0],chakras[1]);
-          verboseLog(buddies);
+          console.log("Chakras:");
+          console.log(chakras);
+          var buddies = chakras[0].concat(chakras[1]);
+          console.log(buddies);
           for (var i=0; i<buddies.length; i++) {
-            targetArray[buddies[i].level][buddies[i].row].setStroke('lightgreen');
-            targetArray[buddies[i].level][buddies[i].row].setStrokeWidth(2);
-
+            if(buddies[i] !== undefined) {
+              buddies[i].setStroke('lightgreen');
+              buddies[i].setStrokeWidth(2);
+            } else {
+              console.log("undefined targetCircle found in getChakras return value");
+            }
           }
+          targetLayer.draw();
         }
         if(gameState.showGroups) {
           if(pieceArray[this.level][this.row] !== 'mt'){
@@ -537,8 +536,8 @@ var targetArray = new Array();
 var border = new Kinetic.Rect({
   x: 4,
   y: 4,
-  width: stage.getWidth()-6,
-  height: stage.getHeight()-6,
+  width: gameStage.getWidth()-6,
+  height: gameStage.getHeight()-6,
   stroke: 'black',
   fill: '#999999',
   strokeWidth: 4
@@ -558,11 +557,11 @@ for (n=0; n<targetArray.length;n++) {
   }
 }
 
-// add the layers to the stage
-stage.add(backgroundLayer);
-stage.add(boardLayer);
-stage.add(targetLayer);
-stage.add(pieceLayer);
+// add the layers to the gameStage
+gameStage.add(backgroundLayer);
+gameStage.add(boardLayer);
+gameStage.add(targetLayer);
+gameStage.add(pieceLayer);
 getChakras(targetArray[4][1]);
 
 console.log("ready");
