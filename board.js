@@ -71,6 +71,7 @@ function cycleTwelve(value, addend) {
 var gameState = {
   isBlackMove: true,
   isSliding: false,
+  isMyMove: true,
   blackCaptures: 0,
   whiteCaptures: 0,
   pieceIDs: 0,
@@ -81,8 +82,6 @@ var gameState = {
 gameState.nextTurn = function() {
   this.isBlackMove = ! this.isBlackMove;
 }
-
-
 
 getAdjacent = function(level, row, circleArray) {
   var adjacencies = Array()
@@ -211,8 +210,6 @@ getChakras = function(piece) {
     for (i = 0; i < myCounterclockwise.length; i++) {
       myCounterclockwise[i] = [5, cycleTwelve(i,piece.row)];
     }
-    console.log("hit outer ring, returned:");
-    console.log(myCounterclockwise);
   } else {
     for (i = 0; i < myCounterclockwise.length; i++) {
       myCounterclockwise[i] = [myCounterclockwise[i][0],cycleTwelve(myCounterclockwise[i][1],piece.level)];
@@ -338,10 +335,36 @@ calculateWin = function() {
 
 var chakraRing = new Array();
 
-(function() {
+var makeFlipper = function() {
+  var whiteCircle = new Kinetic.Circle ({
+    x: gameStage.getWidth()*4/5 + 75 - chakraRadius/8,
+    y: gameStage.getHeight() * 1/7,
+    radius: chakraRadius/4,
+    fill: 'white'
+  })
+  var blackCircle = new Kinetic.Circle ({
+    x: whiteCircle.getX() + chakraRadius/4,
+    y: whiteCircle.getY(), 
+    radius: whiteCircle.getRadius(),
+    fill: 'black'
+  })
+  targetLayer.add(whiteCircle);
+  targetLayer.add(blackCircle);
+  blackCircle.moveToTop();
+  targetLayer.draw;
+  var flipIt = function() {
+    //do something;
+    console.log("do me!");
+  }
+  return flipIt;
+}
+var flipWhiteBlack = makeFlipper();
+flipWhiteBlack();
+
+inspectButton = (function() {
   var inspectButton = new Kinetic.Rect ({
     x: gameStage.getWidth()*4/5,
-    y: gameStage.getHeight()*1/5,
+    y: gameStage.getHeight()*2/5,
     cornerRadius: 6,
     height: 50,
     width: 150,
@@ -363,6 +386,7 @@ var chakraRing = new Array();
       this.setFill('maroon');
     }
     targetLayer.draw();
+
   });
 
   targetLayer.add(inspectButton);
@@ -372,7 +396,7 @@ var chakraRing = new Array();
 (function() {
   var groupsButton = new Kinetic.Rect ({
     x: gameStage.getWidth()*4/5,
-    y: gameStage.getHeight()*2/5,
+    y: gameStage.getHeight()*3/5,
     cornerRadius: 6,
     height: 50,
     width: 150,
@@ -476,7 +500,6 @@ var targetArray = new Array();
         this.setStrokeWidth(3);
         if(gameState.showAdjacents) {
           var buddies = getChakras(this);
-
           for (var i=0; i<buddies[0].length; i++) {
             if(buddies[0][i] !== undefined) {
               buddies[0][i].setStroke('lightgreen');
