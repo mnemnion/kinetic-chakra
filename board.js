@@ -67,6 +67,13 @@ function cycleTwelve(value, addend) {
   } 
 }
 
+var verboseLog = function (message) {
+  var verbose = true;
+  if (verbose) {
+    console.log(message)
+  }
+}
+
 var gameState = {
   isBlackMove: true,
   isSliding: false,
@@ -76,6 +83,10 @@ var gameState = {
   showAdjacents: true,
   showGroups: true
 };
+
+gameState.nextTurn = function() {
+  this.isBlackMove = ! this.isBlackMove;
+}
 
 
 
@@ -126,7 +137,7 @@ getAdjacentPieces = function(piece) {
 };
 
 getAdjacentLiberties = function(piece) { // takes a piece
-  var buddies = getAdjacent(piece.level, piece.row, targetCircles);
+  var buddies = getAdjacent(piece.level, piece.row, targetArray);
   var emptyTargets = Array();
   for (var i=0; i<buddies.length;i++) {
     if (pieceArray[buddies[i].level][buddies[i].row]==='mt') {
@@ -138,7 +149,7 @@ getAdjacentLiberties = function(piece) { // takes a piece
 
 
 getAdjacentTargets = function(piece) {
-  var targets = getAdjacent(piece.level, piece.row, targetCircles);
+  var targets = getAdjacent(piece.level, piece.row, targetArray);
   return targets;
 };
 
@@ -156,8 +167,8 @@ var getGroup = function (piece, group, color) {
   if (color === piece.getFill()) {
     group.push(piece); // add the piece in question.
     var buddies = getAdjacentPieces(piece); // get all friends
-//    console.log('buddies are:');
-//    console.log(buddies);
+ //    console.log('buddies are:');
+ //    console.log(buddies);
     for (var i=0; i<buddies.length;i++) {
       var notInGroup = true;
       for (var j=0; j<group.length;j++) {
@@ -173,6 +184,42 @@ var getGroup = function (piece, group, color) {
     } 
   }
   return group;
+};
+
+var cycleArray = function(toBeCycled, index, numTimes) {
+  // cycles upwards through array toBeCycled, starting at index, numTimes.
+  var catcher = Array();
+  var cycler = index;
+  if (index >= toBeCycled.length) {
+    console.log ('index out of bounds in cycle Array');
+    return;
+  }
+  for (i=0; i<numTimes; i++) {
+    catcher[i] = toBeCycled[cycler];
+    cycler++;
+    if (cycler === toBeCycled.length) {
+      cycler = 0;
+    }
+  }
+  return catcher;
+};
+
+verboseLog(cycleArray([1,2,3],1,11));
+
+getChakras = function(piece) {
+  // returns all points on both chakras the piece is on.
+  var clockwiseCircle = [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,4],[2,3],[3,2],[4,1],[5,0]];
+  var counterclockwiseCircle = [[0,0],[1,11],[2,10],[3,9],[4,8],[5,7],[4,7],[3,7],[2,7],[1,7],[0,7]];
+  var myClockwise = cycleArray (clockwiseCircle, piece.level, 12);
+  var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 12);
+  verboseLog(myClockwise);
+  var chakras = [[],[]];
+  for (i=0; i<12; i++) {
+    chakras[0][i] = targetArray[myClockwise[i][0]][(myClockwise[i][1])+piece.row]; // >.<   
+    chakras[1][i] = targetArray[myCounterclockwise[i][0]][(myCounterclockwise[i][1]+piece.row)];
+  }
+  verboseLog(chakras[0]);
+  return chakras;
 };
 
 getSlideable = function(piece) {
@@ -239,6 +286,41 @@ emanateKill = function(piece) {
   }
 
 };
+
+function addPiece (that, type) {
+    var newPiece = new Kinetic.Circle ({
+      x: that.getX(),
+      y: that.getY(),
+      radius: chakraRadius/8,
+      fill: type,
+      listening: false,
+      id: gameState.pieceIDs
+    });
+    gameState.pieceIDs++;
+    newPiece.row = that.row;
+    newPiece.level  = that.level;
+    pieceArray[that.level][that.row] = newPiece;
+    pieceLayer.add(newPiece);
+    emanateKill(newPiece);
+     // check for four surrounding enemies
+    noAtari = getAdjacentPieces(newPiece);
+    var isOk = true;
+    if (noAtari.length === 4) {
+      console.log("Getting crowded in here");
+      isOk = false;
+      for (var i=0; i<noAtari.length; i++) {
+        if (noAtari[i].getFill()===type) {
+          isOk = true;
+        }
+      }
+    }
+    if (isOk === false) {
+      killGroup([newPiece]);  
+    } else {
+      gameState.nextTurn();
+    }
+    pieceLayer.draw();
+}
 
 calculateWin = function() {
 
@@ -314,43 +396,13 @@ var chakraRing = new Array();
   targetLayer.draw();
 }());
 
+var whiteSymbol = new Kinetic.Circle ({
+
+});
 
 
 
-function addPiece (that, type) {
-    var newPiece = new Kinetic.Circle ({
-      x: that.getX(),
-      y: that.getY(),
-      radius: chakraRadius/8,
-      fill: type,
-      listening: false,
-      id: gameState.pieceIDs
-    });
-    gameState.pieceIDs++;
-    newPiece.row = that.row;
-    newPiece.level  = that.level;
-    pieceArray[that.level][that.row] = newPiece;
-    pieceLayer.add(newPiece);
-    emanateKill(newPiece);
-     // check for four surrounding enemies
-    noAtari = getAdjacentPieces(newPiece);
-    var isOk = true;
-    if (noAtari.length === 4) {
-      console.log("Getting crowded in here");
-      isOk = false;
-      for (var i=0; i<noAtari.length; i++) {
-        if (noAtari[i].getFill()===type) {
-          isOk = true;
-        }
-      }
-    }
-    if (isOk === false) {
-      killGroup([newPiece]);  
-      gameState.isBlackMove = ! gameState.isBlackMove;
-    }
-    gameState.isBlackMove = ! gameState.isBlackMove;
-    pieceLayer.draw();
-}
+
 
 
 
@@ -378,106 +430,108 @@ function addPiece (that, type) {
 
  //   console.log("creating ring " + i);
     chakraRing[i]=circle;
-};
-  }());
+  };
+}());
 
-var targetCircles = new Array();
+var targetArray = new Array();
 
-//populate the targetCircles array with special targetCircles
+//populate the targetArray array with special targetArray
 (function(){
   for (n=1; n<7; n++) {
     var ring = Array();
     ringRadius = chakraRadius * Math.sin(2*Math.PI*n/24); // formula of a chord
     for (m=0; m<12; m++) { 
 
-        var circle = new Kinetic.Circle({
-          x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
-          y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
-          radius : chakraRadius/8,
-          fill: 'none',
-          stroke: 'none',
-          strokeWidth: 2,
-        });
-        circle.level = n-1;
-        circle.row = m;
+      var circle = new Kinetic.Circle({
+        x : stage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/12),
+        y : stage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/12),
+        radius : chakraRadius/8,
+        fill: 'none',
+        stroke: 'none',
+        strokeWidth: 2,
+      });
+      circle.level = n-1;
+      circle.row = m;
 
-        circle.on('click', function(evt){
-          if (pieceArray[this.level][this.row] === 'mt') {
-            if (!gameState.isSliding) {
-              if (gameState.isBlackMove) {
-                addPiece(this, 'black');
-              } else {
-                addPiece(this, 'white');
-              };
-              console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
-              targetLayer.draw();
+      circle.on('click', function(evt){
+        if (pieceArray[this.level][this.row] === 'mt') {
+          if (!gameState.isSliding) {
+            if (gameState.isBlackMove) {
+              addPiece(this, 'black');
+            } else {
+              addPiece(this, 'white');
+            };
+            verboseLog(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
+            targetLayer.draw();
+          }
+        }
+      });
+
+      circle.on('mouseover', function(evt){
+        this.setStroke('red');
+        this.setStrokeWidth(3);
+        if(gameState.showAdjacents) {
+          var chakras = getChakras(this);
+          var buddies = Array();
+          buddies.concat(chakras[0],chakras[1]);
+          verboseLog(buddies);
+          for (var i=0; i<buddies.length; i++) {
+            targetArray[buddies[i].level][buddies[i].row].setStroke('lightgreen');
+            targetArray[buddies[i].level][buddies[i].row].setStrokeWidth(2);
+
+          }
+        }
+        if(gameState.showGroups) {
+          if(pieceArray[this.level][this.row] !== 'mt'){
+            var group = getGroup(pieceArray[this.level][this.row]);
+            for (var i=0; i<group.length; i++) {
+              targetArray[group[i].level][group[i].row].setStroke('blue');
+              targetArray[group[i].level][group[i].row].setStrokeWidth(3);
             }
           }
-        });
+        }
+        targetLayer.draw();
+      });
 
-        circle.on('mouseover', function(evt){
-          this.setStroke('red');
-          this.setStrokeWidth(3);
-          if(gameState.showAdjacents) {
-            var buddies = getAdjacentLiberties(this);
-            for (var i=0; i<buddies.length; i++) {
-              targetCircles[buddies[i].level][buddies[i].row].setStroke('lightgreen');
-              targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(2);
-
+      circle.on('mouseleave', function(evt){
+        this.setStroke('none');
+        targetLayer.draw();
+        if(gameState.showAdjacents) {
+          var buddies = getAdjacentTargets(this);
+          for (var i=0; i<buddies.length; i++) {
+            targetArray[buddies[i].level][buddies[i].row].setStroke('none');
+          }
+        }
+        if(gameState.showGroups) {
+          if(pieceArray[this.level][this.row] !== 'mt') {
+            var group = getGroup(pieceArray[this.level][this.row]);
+            for (var i=0; i<group.length; i++) {
+              //               console.log('turning off circles')
+              targetArray[group[i].level][group[i].row].setStroke('none');
+              targetArray[group[i].level][group[i].row].setStrokeWidth(2);
             }
-          }
-          if(gameState.showGroups) {
-            if(pieceArray[this.level][this.row] !== 'mt'){
-              var group = getGroup(pieceArray[this.level][this.row]);
-              for (var i=0; i<group.length; i++) {
-                targetCircles[group[i].level][group[i].row].setStroke('blue');
-                targetCircles[group[i].level][group[i].row].setStrokeWidth(2);
-              }
-            }
-          }
-          targetLayer.draw();
-        });
+          }  
+        }
+        targetLayer.draw();
+      });
 
-        circle.on('mouseleave', function(evt){
-          this.setStroke('none');
-          targetLayer.draw();
-          if(gameState.showAdjacents) {
-            var buddies = getAdjacentTargets(this);
-            for (var i=0; i<buddies.length; i++) {
-              targetCircles[buddies[i].level][buddies[i].row].setStroke('none');
-            }
-          }
-          if(gameState.showGroups) {
-            if(pieceArray[this.level][this.row] !== 'mt') {
-              var group = getGroup(pieceArray[this.level][this.row]);
-              for (var i=0; i<group.length; i++) {
- //               console.log('turning off circles')
-                targetCircles[group[i].level][group[i].row].setStroke('none');
-                targetCircles[group[i].level][group[i].row].setStrokeWidth(2);
-              }
-            }  
-          }
-          targetLayer.draw();
-        });
+      circle.on('dblclick', function(evt){
+        console.log('doubleclicked ' + this.level + ' ' + this.row);
+        var buddies = getGroup(pieceArray[this.level][this.row]);
+        console.log('Returned group is:');
+        console.log(buddies);
+        console.log("Number of liberties: " + countLiberties(buddies));
+        for (var i=0; i< buddies.length; i++) {
+          targetArray[buddies[i].level][buddies[i].row].setStroke('red');
+          targetArray[buddies[i].level][buddies[i].row].setStrokeWidth(4);
+        }
+        targetLayer.draw();
+      });
 
-        circle.on('dblclick', function(evt){
-          console.log('doubleclicked ' + this.level + ' ' + this.row);
-          var buddies = getGroup(pieceArray[this.level][this.row]);
-          console.log('Returned group is:');
-          console.log(buddies);
-          console.log("Number of liberties: " + countLiberties(buddies));
-          for (var i=0; i< buddies.length; i++) {
-            targetCircles[buddies[i].level][buddies[i].row].setStroke('red');
-            targetCircles[buddies[i].level][buddies[i].row].setStrokeWidth(4);
-            
-          }
-          targetLayer.draw();
-        });
-  
-        ring.push(circle);
+      ring.push(circle);
     }
-  targetCircles.push(ring);
-}
+  targetArray.push(ring);
+  }
 }());
 
 var border = new Kinetic.Rect({
@@ -497,10 +551,10 @@ for (n=0; n<chakraRing.length; n++) {
 
 backgroundLayer.add(border);
 
-for (n=0; n<targetCircles.length;n++) {
-  for (m=0; m<targetCircles[n].length; m++) {
-//    console.log("adding targetCircles " + n + " sub " + m);
-    targetLayer.add(targetCircles[n][m]);
+for (n=0; n<targetArray.length;n++) {
+  for (m=0; m<targetArray[n].length; m++) {
+//    console.log("adding targetArray " + n + " sub " + m);
+    targetLayer.add(targetArray[n][m]);
   }
 }
 
@@ -509,6 +563,8 @@ stage.add(backgroundLayer);
 stage.add(boardLayer);
 stage.add(targetLayer);
 stage.add(pieceLayer);
+getChakras(targetArray[4][1]);
+
 console.log("ready");
 
 //}());
