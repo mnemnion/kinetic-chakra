@@ -202,8 +202,9 @@ getChakras = function(piece) {
   if (piece.level === 5) {
     //handle the outer ring exception
     for (i = 0; i < 12; i++) {
-      myCounterclockwise[i] = [5, cycleNumCircles(i,piece.row)];
+      myCounterclockwise[i] = [5, cycleNumCircles(i,piece.row+1)];
     }
+    myCounterclockwise.reverse();
     console.log("Outer ring myCounterclockwise");
     console.log(myCounterclockwise);
   } else {
@@ -215,8 +216,16 @@ getChakras = function(piece) {
   for (i=0; i<myClockwise.length; i++) {
     chakras[0][i] = targetArray[myClockwise[i][0]][cycleNumCircles(myClockwise[i][1],piece.row)];  
   }
-  for (i=0; i<myCounterclockwise.length; i++) {  
-    chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleNumCircles(myCounterclockwise[i][1],piece.row)];
+  for (i=0; i<myCounterclockwise.length; i++) {
+    if (piece.level === 5) {   
+      chakras[1][i] = targetArray[myCounterclockwise[i][0]][myCounterclockwise[i][1]];
+    } else {
+      chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleNumCircles(myCounterclockwise[i][1],piece.row)];
+    }
+  }
+  if (piece.level ===5) {
+    console.log("returning chakras:");
+    console.log(chakras);
   }
   return chakras;
 };
@@ -512,12 +521,15 @@ var targetArray = new Array();
             if(buddies[0][i] !== undefined) {
               buddies[0][i].setStroke('lightgreen');
               buddies[0][i].setStrokeWidth(2);
-              buddies[1][i].setStroke('lightblue');
-              buddies[1][i].setStrokeWidth(2);
             } else {
               console.log("undefined targetCircle found in getChakras return value");
             }
           }
+          for (var i=0; i<buddies[1].length; i++) {
+            buddies[1][i].setStroke('lightblue');
+            buddies[1][i].setStrokeWidth(2);
+          } 
+          
           targetLayer.draw();
         }
 
