@@ -7,20 +7,31 @@ var gameStage = new Kinetic.Stage({
 
 var gameState = {
   numCircles: 12,
-  isBlackMove: true,
+  whichMove: 'black',
   isSliding: false,
   isMyMove: true,
+  sliderSelected: false,
   blackCaptures: 0,
   whiteCaptures: 0,
   pieceIDs: 0,
-  showAdjacents: false,
-  showGroups: true,
-  showSliding: true
+  showChakras: false,
+  showGroups: false,
+  showSliding: false
 };
 
 gameState.nextTurn = function() {
-  this.isBlackMove = ! this.isBlackMove;
+  if (this.whichMove === 'black') {
+    this.whichMove = 'white';
+  } else {
+    this.whichMove = 'black';
+  }
   flipWhiteBlack();
+  console.log('next turn');
+}
+
+gameState.pieceAdded = function() {
+  this.isSliding = true;
+  console.log('piece added');
 }
 
 var boardLayer = new Kinetic.Layer();
@@ -336,7 +347,7 @@ function addPiece (that, type) {
     if (numLiberties === 0) {
       killGroup([newPiece]);  
     } else {
-      gameState.nextTurn();
+      gameState.pieceAdded();
     }
     pieceLayer.draw();
 }
@@ -371,7 +382,7 @@ var makeFlipper = function() {
   blackCircle.moveToTop();
   targetLayer.draw;
   var flipIt = function() {
-    if (gameState.isBlackMove) {
+    if (gameState.whichMove === 'black') {
       blackCircle.moveToTop();
     } else {
       whiteCircle.moveToTop();
@@ -394,16 +405,16 @@ inspectButton = (function() {
     strokeWidth: 2
   })
 
-  if (gameState.showAdjacents) {
+  if (gameState.showChakras) {
     inspectButton.setFill('red');
   }
 
   inspectButton.on('click', function(evt){
-    if (gameState.showAdjacents === false) {
-      gameState.showAdjacents = true;
+    if (gameState.showChakras === false) {
+      gameState.showChakras = true;
       this.setFill('red');
     } else {
-      gameState.showAdjacents = false;
+      gameState.showChakras = false;
       this.setFill('maroon');
     }
     targetLayer.draw();
@@ -502,23 +513,48 @@ var targetArray = new Array();
       circle.row = m;
 
       circle.on('click', function(evt){
-        if (pieceArray[this.level][this.row] === 'mt') {
-          if (!gameState.isSliding) {
-            if (gameState.isBlackMove) {
+        
+        if (!gameState.isSliding) {
+          if (pieceArray[this.level][this.row] === 'mt') {
+            if (gameState.whichMove = 'black') {
               addPiece(this, 'black');
             } else {
               addPiece(this, 'white');
             };
             console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
             targetLayer.draw();
+          } 
+        } else { // sliding
+          console.log('clicked on sliding');
+          if (!gameState.sliderSelected) {
+            if (pieceArray[this.level][this.row] !=='mt'){
+              if(pieceArray[this.level][this.row].getFill()===gameState.whichMove){
+
+              }
+              var slideTargets = getSlideable(pieceArray[this.level][this.row]);
+              for (var i=0; i<slideTargets.length;i++) {
+                slideTargets[i].setStroke('lightgreen');
+                slideTargets[i].setStrokeWidth(3);
+              }
+            } 
           }
         }
+        targetLayer.draw();
       });
 
       circle.on('mouseover', function(evt){
-        this.setStroke('red');
-        this.setStrokeWidth(3);
-        if(gameState.showAdjacents) {
+        if(!gameState.isSliding) {
+          this.setStroke('red');
+          this.setStrokeWidth(3);
+        } else {
+          if (pieceArray[this.level][this.row] !== 'mt') {
+            if (gameState.whichMove === pieceArray[this.level][this.row].getFill()) {
+              this.setStroke('red');
+              this.setStrokeWidth(3);
+            }
+          }
+        }
+        if(gameState.showChakras) {
           var buddies = getChakras(this);
           for (var i=0; i<buddies[0].length; i++) {
             buddies[0][i].setStroke('lightgreen');
@@ -528,10 +564,7 @@ var targetArray = new Array();
             buddies[1][i].setStroke('lightblue');
             buddies[1][i].setStrokeWidth(2);
           } 
-          
-          targetLayer.draw();
         }
-
         if(gameState.showSliding) {
           if (pieceArray[this.level][this.row] !=='mt'){
             var slideTargets = getSlideable(pieceArray[this.level][this.row]);
@@ -543,8 +576,8 @@ var targetArray = new Array();
                 console.log("undefined targetCircle found in getSlideable return value");
               }
             }
-          targetLayer.draw();
           }
+        targetLayer.draw();
         }
 
         if(gameState.showGroups) {
@@ -562,7 +595,7 @@ var targetArray = new Array();
       circle.on('mouseleave', function(evt){
         this.setStroke('none');
         targetLayer.draw();
-        if(gameState.showAdjacents) {
+        if(gameState.showChakras) {
           var buddies = getChakras(this);
 
           for (var i=0; i<buddies[0].length; i++) {
