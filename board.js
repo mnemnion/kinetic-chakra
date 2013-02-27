@@ -14,7 +14,8 @@ var gameState = {
   whiteCaptures: 0,
   pieceIDs: 0,
   showAdjacents: true,
-  showGroups: true
+  showGroups: true,
+  showSliding: false
 };
 
 gameState.nextTurn = function() {
@@ -200,9 +201,11 @@ getChakras = function(piece) {
   var myCounterclockwise = cycleArray(counterclockwiseCircle, piece.level, 11);
   if (piece.level === 5) {
     //handle the outer ring exception
-    for (i = 0; i < myCounterclockwise.length; i++) {
+    for (i = 0; i < 12; i++) {
       myCounterclockwise[i] = [5, cycleNumCircles(i,piece.row)];
     }
+    console.log("Outer ring myCounterclockwise");
+    console.log(myCounterclockwise);
   } else {
     for (i = 0; i < myCounterclockwise.length; i++) {
       myCounterclockwise[i] = [myCounterclockwise[i][0],cycleNumCircles(myCounterclockwise[i][1],piece.level)];
@@ -210,7 +213,9 @@ getChakras = function(piece) {
   }
   var chakras = [[],[]];
   for (i=0; i<myClockwise.length; i++) {
-    chakras[0][i] = targetArray[myClockwise[i][0]][cycleNumCircles(myClockwise[i][1],piece.row)]; // >.<   
+    chakras[0][i] = targetArray[myClockwise[i][0]][cycleNumCircles(myClockwise[i][1],piece.row)];  
+  }
+  for (i=0; i<myCounterclockwise.length; i++) {  
     chakras[1][i] = targetArray[myCounterclockwise[i][0]][cycleNumCircles(myCounterclockwise[i][1],piece.row)];
   }
   return chakras;
@@ -218,7 +223,28 @@ getChakras = function(piece) {
 
 getSlideable = function(piece) {
   // return all points this piece can slide to.
+  var chakras = getChakras(piece);
+  var slideable = Array();
+  for (i = 0; i<=1; i++){
+    for (j=1; j<chakras[i].length; j++) {
+      var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
+      if (thisPiece==='mt') {
+        slideable.push(chakras[i][j]);
+      } else {
+        break;
+      }
+    }
+    for(j=chakras[i].length-1; j>=1; j--) {
+      var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
+      if (thisPiece==='mt') {
+        slideable.push(chakras[i][j]);
+      } else {
+        break;
+      }
+    }
+  }
 
+  return slideable; // array of targetCircles
 };
 
 countLiberties = function(group) {
@@ -494,6 +520,22 @@ var targetArray = new Array();
           }
           targetLayer.draw();
         }
+
+        if(gameState.showSliding) {
+          if (pieceArray[this.level][this.row] !=='mt'){
+            var slideTargets = getSlideable(pieceArray[this.level][this.row]);
+            for (var i=0; i<slideTargets.length;i++) {
+              if(slideTargets[i] !== undefined) {
+                slideTargets[i].setStroke('yellow');
+                slideTargets[i].setStrokeWidth(3);
+              } else {
+                console.log("undefined targetCircle found in getSlideable return value");
+              }
+            }
+          targetLayer.draw();
+          }
+        }
+
         if(gameState.showGroups) {
           if(pieceArray[this.level][this.row] !== 'mt'){
             var group = getGroup(pieceArray[this.level][this.row]);
@@ -524,6 +566,22 @@ var targetArray = new Array();
           }
           targetLayer.draw();
         }
+
+         if(gameState.showSliding) {
+          if (pieceArray[this.level][this.row] !=='mt'){
+            var slideTargets = getSlideable(pieceArray[this.level][this.row]);
+            for (var i=0; i<slideTargets.length;i++) {
+              if(slideTargets[i] !== undefined) {
+                slideTargets[i].setStroke('none');
+                slideTargets[i].setStrokeWidth(2);
+              } else {
+                console.log("undefined targetCircle found in getSlideable return value");
+              }
+            }
+          targetLayer.draw();
+          }
+        }
+
         if(gameState.showGroups) {
           if(pieceArray[this.level][this.row] !== 'mt') {
             var group = getGroup(pieceArray[this.level][this.row]);
