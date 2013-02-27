@@ -425,8 +425,8 @@ var makeFlipper = function() {
 var flipWhiteBlack = makeFlipper();
 flipWhiteBlack();
 
-inspectButton = (function() {
-  var inspectButton = new Kinetic.Rect ({
+(function() {
+  var passButton = new Kinetic.Rect ({
     x: gameStage.getWidth()*4/5,
     y: gameStage.getHeight()*2/5,
     cornerRadius: 6,
@@ -436,24 +436,25 @@ inspectButton = (function() {
     stroke: 'black',
     strokeWidth: 2
   })
+  var buttonText = new Kinetic.Text ({
+    x: passButton.getX(),
+    y: passButton.getY()+9,
+    text: "Pass",
+    fontSize: 30,
+    fontFamily: 'Calibri',
+    fill: 'black',
+    width: passButton.getWidth(),
+    align: 'center'
+  })
 
-  if (gameState.showChakras) {
-    inspectButton.setFill('red');
-  }
-
-  inspectButton.on('click', function(evt){
-    if (gameState.showChakras === false) {
-      gameState.showChakras = true;
-      this.setFill('red');
-    } else {
-      gameState.showChakras = false;
-      this.setFill('maroon');
-    }
+  buttonText.on('click', function(evt){
+    gameState.nextTurn();
+    passButton.setFill('red');
     targetLayer.draw();
-
   });
 
-  targetLayer.add(inspectButton);
+  targetLayer.add(passButton);
+  targetLayer.add(buttonText);
   targetLayer.draw();
 }());
 
