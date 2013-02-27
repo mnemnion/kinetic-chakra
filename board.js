@@ -13,9 +13,9 @@ var gameState = {
   blackCaptures: 0,
   whiteCaptures: 0,
   pieceIDs: 0,
-  showAdjacents: true,
+  showAdjacents: false,
   showGroups: true,
-  showSliding: false
+  showSliding: true
 };
 
 gameState.nextTurn = function() {
@@ -41,11 +41,14 @@ var outerEdge = new Kinetic.Circle({
 var chakraRadius = outerEdge.getRadius()/2;
 
 var pieceArray = new Array();
+var slideArray = new Array();
 
 for (i=0; i < 6; i++) {
   pieceArray[i] = new Array();
+  slideArray[i] = new Array();
   for(j=0; j < gameState.numCircles; j++) {
     pieceArray[i].push('mt');
+    slideArray[i].push('mt');
   }
 }
 
@@ -518,12 +521,8 @@ var targetArray = new Array();
         if(gameState.showAdjacents) {
           var buddies = getChakras(this);
           for (var i=0; i<buddies[0].length; i++) {
-            if(buddies[0][i] !== undefined) {
-              buddies[0][i].setStroke('lightgreen');
-              buddies[0][i].setStrokeWidth(2);
-            } else {
-              console.log("undefined targetCircle found in getChakras return value");
-            }
+            buddies[0][i].setStroke('lightgreen');
+            buddies[0][i].setStrokeWidth(2);
           }
           for (var i=0; i<buddies[1].length; i++) {
             buddies[1][i].setStroke('lightblue');
@@ -538,7 +537,7 @@ var targetArray = new Array();
             var slideTargets = getSlideable(pieceArray[this.level][this.row]);
             for (var i=0; i<slideTargets.length;i++) {
               if(slideTargets[i] !== undefined) {
-                slideTargets[i].setStroke('yellow');
+                slideTargets[i].setStroke('lightgreen');
                 slideTargets[i].setStrokeWidth(3);
               } else {
                 console.log("undefined targetCircle found in getSlideable return value");
@@ -567,14 +566,12 @@ var targetArray = new Array();
           var buddies = getChakras(this);
 
           for (var i=0; i<buddies[0].length; i++) {
-            if(buddies[0][i] !== undefined) {
-              buddies[0][i].setStroke('none');
-              buddies[0][i].setStrokeWidth(2);
-              buddies[1][i].setStroke('none');
-              buddies[1][i].setStrokeWidth(2);
-            } else {
-              console.log("undefined targetCircle found in getChakras return value");
-            }
+            buddies[0][i].setStroke('none');
+            buddies[0][i].setStrokeWidth(2);
+          } 
+          for (i=0; i<buddies[1].length; i++) {
+            buddies[1][i].setStroke('none');
+            buddies[1][i].setStrokeWidth(2);
           }
           targetLayer.draw();
         }
