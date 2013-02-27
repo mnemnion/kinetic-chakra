@@ -375,6 +375,8 @@ function addPiece (that, type) {
     // and physically move it
     piece.setX(targetCircle.getX());
     piece.setY(targetCircle.getY());
+    // make murder if called for
+    emanateKill(piece);
     gameState.nextTurn();
   } else {
     console.log("cannot move piece to occupied zone");
