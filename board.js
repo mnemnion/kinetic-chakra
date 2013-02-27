@@ -26,6 +26,16 @@ gameState.nextTurn = function() {
     this.whichMove = 'black';
   }
   flipWhiteBlack();
+  this.isSliding = false;
+  this.sliderSelected = false;
+  for (i=0; i < 6; i++) {
+    for(j=0; j < gameState.numCircles; j++) {
+      slideArray[i][j] = 'mt';
+      targetArray[i][j].setStroke('none');
+  }
+  targetLayer.draw();
+}
+
   console.log('next turn');
 }
 
@@ -53,6 +63,7 @@ var chakraRadius = outerEdge.getRadius()/2;
 
 var pieceArray = new Array();
 var slideArray = new Array();
+
 
 for (i=0; i < 6; i++) {
   pieceArray[i] = new Array();
@@ -352,6 +363,25 @@ function addPiece (that, type) {
     pieceLayer.draw();
 }
 
+ movePiece = function (piece, targetCircle) {
+  if (pieceArray[targetCircle.level][targetCircle.row] === 'mt') {
+    console.log('moving piece to ' + targetCircle.level + " sub " + targetCircle.row);
+    pieceArray[targetCircle.level][targetCircle.row] = piece;
+    //piece is in the array but doesn't know it
+    pieceArray[piece.level][piece.row] = 'mt';
+    //now we tell it
+    piece.level = targetCircle.level;
+    piece.row = targetCircle.row;
+    // and physically move it
+    piece.setX(targetCircle.getX());
+    piece.setY(targetCircle.getY());
+    gameState.nextTurn();
+  } else {
+    console.log("cannot move piece to occupied zone");
+  }
+  pieceLayer.draw();
+}
+
 calculateWin = function() {
 
 };
@@ -516,7 +546,7 @@ var targetArray = new Array();
         
         if (!gameState.isSliding) {
           if (pieceArray[this.level][this.row] === 'mt') {
-            if (gameState.whichMove = 'black') {
+            if (gameState.whichMove === 'black') {
               addPiece(this, 'black');
             } else {
               addPiece(this, 'white');
@@ -524,19 +554,22 @@ var targetArray = new Array();
             console.log(this.level + ' sub ' + this.row + ' is now ' + pieceArray[this.level][this.row].getFill());
             targetLayer.draw();
           } 
-        } else { // sliding
-          console.log('clicked on sliding');
-          if (!gameState.sliderSelected) {
+        } else if (!gameState.sliderSelected) {
             if (pieceArray[this.level][this.row] !=='mt'){
               if(pieceArray[this.level][this.row].getFill()===gameState.whichMove){
-
-              }
-              var slideTargets = getSlideable(pieceArray[this.level][this.row]);
-              for (var i=0; i<slideTargets.length;i++) {
-                slideTargets[i].setStroke('lightgreen');
-                slideTargets[i].setStrokeWidth(3);
+                var slideTargets = getSlideable(pieceArray[this.level][this.row]);
+                gameState.slider = pieceArray[this.level][this.row];
+                gameState.sliderSelected = true;
+                for (var i=0; i<slideTargets.length;i++) {
+                  slideTargets[i].setStroke('lightgreen');
+                  slideTargets[i].setStrokeWidth(3);
+                  slideArray[slideTargets[i].level][slideTargets[i].row] = slideTargets[i];
+                }
               }
             } 
+        } else if (gameState.sliderSelected) { //slider selected
+          if (slideArray[this.level][this.row] !== 'mt') {
+            movePiece(gameState.slider,slideArray[this.level][this.row]);
           }
         }
         targetLayer.draw();
@@ -547,7 +580,7 @@ var targetArray = new Array();
           this.setStroke('red');
           this.setStrokeWidth(3);
         } else {
-          if (pieceArray[this.level][this.row] !== 'mt') {
+          if (pieceArray[this.level][this.row] !== 'mt' && !gameState.slideSelected) {
             if (gameState.whichMove === pieceArray[this.level][this.row].getFill()) {
               this.setStroke('red');
               this.setStrokeWidth(3);
@@ -593,8 +626,13 @@ var targetArray = new Array();
       });
 
       circle.on('mouseleave', function(evt){
-        this.setStroke('none');
-        targetLayer.draw();
+        if(!gameState.isSliding) {
+          this.setStroke('none');
+          targetLayer.draw(); 
+        } else if (!gameState.sliderSelected) {
+          this.setStroke('none');
+          targetLayer.draw();
+        }
         if(gameState.showChakras) {
           var buddies = getChakras(this);
 
