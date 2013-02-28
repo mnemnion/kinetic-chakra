@@ -48,6 +48,7 @@ var boardLayer = new Kinetic.Layer();
 var backgroundLayer = new Kinetic.Layer();
 var targetLayer = new Kinetic.Layer();
 var pieceLayer = new Kinetic.Layer();
+var slideLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
@@ -365,19 +366,24 @@ function addPiece (that, type) {
 
 slidePiece = function(piece, targetCircle) {
 var chakras = getChakras(piece);
+
 	var slideable = Array();
 	var onClockwise = true;
 	var goingUp =true;
 	var direction = Array();
 	var slideGroup = new Kinetic.Group();
+	var found = false;
 	for (i = 0; i<=1; i++){
 		goingUp = true;
 		for (j=1; j<chakras[i].length; j++) {
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
+				found = true; 
+				break;
 			}
 		}
+		if (found) {break;}
 		goingUp = false;
 		for(j=chakras[i].length-1; j>=1; j--) {
 			if (chakras[i][j] === targetCircle) {
@@ -388,20 +394,36 @@ var chakras = getChakras(piece);
 		onClockwise = !onClockwise;
 	}
 	if (piece.level === 5) { //outer ring
-		slideGroup.add(outerEdge);
+		console.log(direction);
+		piece.remove();
+//		slideGroup.add(outerEdge);
 		slideGroup.add(piece);
 		slideGroup.setX(outerEdge.getX()/2);
 		slideGroup.setY(outerEdge.getY()/2);
 		console.log(slideGroup);
-		pieceLayer.add(slideGroup);
+		slideLayer.add(slideGroup);
 		slideGroup.setOffset(outerEdge.getOffset());
+		console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 		slideGroup.transitionTo({
 			rotation:-2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles,
 			duration: 2,
-			easing: 'ease-in-out'
+			easing: 'ease-in-out',
+			callback: function() {
+				piece.remove();
+				piece.setX(targetCircle.getX());
+				piece.setY(targetCircle.getY());
+				
+				pieceLayer.add(piece);
+				pieceLayer.draw();
+				console.log(piece.getX(),piece.getY());
+			}	
 		});
-		pieceLayer.draw;
+
+
+		console.log(piece.getX(),piece.getY());
+//		pieceLayer.remove(slideGroup);
 	}
+	return piece;
 };
 
  movePiece = function (piece, targetCircle) {
@@ -410,21 +432,20 @@ var chakras = getChakras(piece);
 		pieceArray[targetCircle.level][targetCircle.row] = piece;
 		//piece is in the array but doesn't know it
 		pieceArray[piece.level][piece.row] = 'mt';
-		//now we tell it
-		slidePiece(piece, targetCircle);
-		piece.level = targetCircle.level;
-		piece.row = targetCircle.row;
-		// and physically move it
-/*
-		piece.transitionTo({
+		//now we move it
+		if (piece.level === 5) {
+			piece = slidePiece(piece, targetCircle);
+		} else {
+			piece.transitionTo({
 			x: targetCircle.getX(),
 			y: targetCircle.getY(),
 			duration: 1
-		})
-*/
-
-//		piece.setX(targetCircle.getX());
-//		piece.setY(targetCircle.getY());
+		});
+		}
+		//then tell it where it is
+		piece.level = targetCircle.level;
+		piece.row = targetCircle.row;
+		
 		// make murder if called for
 		emanateKill(piece);
 		gameState.nextTurn();
@@ -591,7 +612,7 @@ var targetArray = new Array();
 				y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
 				radius : chakraRadius/8,
 				fill: 'none',
-				stroke: 'none',
+				stroke: 'lightgrey',
 				strokeWidth: 2,
 			});
 			circle.level = n-1;
@@ -780,8 +801,7 @@ gameStage.add(backgroundLayer);
 gameStage.add(boardLayer);
 gameStage.add(targetLayer);
 gameStage.add(pieceLayer);
-getChakras(targetArray[4][1]);
-
+gameStage.add(slideLayer);
 console.log("ready");
 
 //}());
