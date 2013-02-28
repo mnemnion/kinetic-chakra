@@ -402,7 +402,7 @@ slidePiece = function(piece, targetCircle) {
 		}
 		onClockwise = !onClockwise;
 	}
-	if (piece.level === 5) { //outer ring
+	if (piece.level === 5 && !direction[0]) { //outer ring
 		console.log("direction:");
 		console.log(direction);
 		piece.remove();
@@ -434,7 +434,13 @@ slidePiece = function(piece, targetCircle) {
 			}	
 		});
 		console.log(piece.getX(),piece.getY());
-	}
+	} else {
+			piece.transitionTo({
+			x: targetCircle.getX(),
+			y: targetCircle.getY(),
+			duration: 1
+		});
+		}
 	return piece;
 };
 
@@ -445,15 +451,8 @@ slidePiece = function(piece, targetCircle) {
 		//piece is in the array but doesn't know it
 		pieceArray[piece.level][piece.row] = 'mt';
 		//now we move it
-		if (piece.level === 5) {
-			piece = slidePiece(piece, targetCircle);
-		} else {
-			piece.transitionTo({
-			x: targetCircle.getX(),
-			y: targetCircle.getY(),
-			duration: 1
-		});
-		}
+		piece = slidePiece(piece, targetCircle);
+	
 		//then tell it where it is
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;
