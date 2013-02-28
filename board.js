@@ -365,8 +365,9 @@ function addPiece (that, type) {
 };
 
 slidePiece = function(piece, targetCircle) {
-var chakras = getChakras(piece);
-
+	var chakras = getChakras(piece);
+	console.log("chakras:");
+	console.log(chakras);
 	var slideable = Array();
 	var onClockwise = true;
 	var goingUp =true;
@@ -376,24 +377,33 @@ var chakras = getChakras(piece);
 	for (i = 0; i<=1; i++){
 		goingUp = true;
 		for (j=1; j<chakras[i].length; j++) {
+			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				found = true; 
+				break;
+			} else if (thisPiece !== 'mt') {
+				console.log('thisPiece: ');
+				console.log(thisPiece);
 				break;
 			}
 		}
 		if (found) {break;}
 		goingUp = false;
 		for(j=chakras[i].length-1; j>=1; j--) {
+			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
+			} else if (thisPiece !== 'mt') {
+				break;
 			}
 		}
 		onClockwise = !onClockwise;
 	}
 	if (piece.level === 5) { //outer ring
+		console.log("direction:");
 		console.log(direction);
 		piece.remove();
 //		slideGroup.add(outerEdge);
@@ -403,25 +413,27 @@ var chakras = getChakras(piece);
 		console.log(slideGroup);
 		slideLayer.add(slideGroup);
 		slideGroup.setOffset(outerEdge.getOffset());
+		if (direction[1]) {
+			radian = -2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles;
+		} else {
+			radian = 2*Math.PI*cycleNumCircles(targetCircle.row, -piece.row)/gameState.numCircles;
+		}
 		console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 		slideGroup.transitionTo({
-			rotation:-2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles,
+			rotation: radian,
 			duration: 2,
 			easing: 'ease-in-out',
 			callback: function() {
-				piece.remove();
+	//			slideGroup.removeChildren();
+				slideGroup.remove();
 				piece.setX(targetCircle.getX());
 				piece.setY(targetCircle.getY());
-				
 				pieceLayer.add(piece);
 				pieceLayer.draw();
 				console.log(piece.getX(),piece.getY());
 			}	
 		});
-
-
 		console.log(piece.getX(),piece.getY());
-//		pieceLayer.remove(slideGroup);
 	}
 	return piece;
 };
@@ -612,7 +624,7 @@ var targetArray = new Array();
 				y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
 				radius : chakraRadius/8,
 				fill: 'none',
-				stroke: 'lightgrey',
+				stroke: 'none',
 				strokeWidth: 2,
 			});
 			circle.level = n-1;
