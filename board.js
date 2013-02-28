@@ -277,7 +277,6 @@ getSlideable = function(piece) {
 			}
 		}
 	}
-
 	return slideable; // array of targetCircles
 };
 
@@ -361,7 +360,36 @@ function addPiece (that, type) {
 			gameState.pieceAdded();
 		}
 		pieceLayer.draw();
-}
+};
+
+slidePiece = function(piece, targetCircle) {
+var chakras = getChakras(piece);
+	var slideable = Array();
+	var onClockwise = true;
+	var goingUp =true;
+	var direction = Array();
+	var slideGroup = new Kinetic.Group();
+	for (i = 0; i<=1; i++){
+		goingUp = true;
+		for (j=1; j<chakras[i].length; j++) {
+			if (chakras[i][j] === targetCircle) {
+				direction.push(onClockwise);
+				direction.push(goingUp);
+			}
+		}
+		goingUp = false;
+		for(j=chakras[i].length-1; j>=1; j--) {
+			if (chakras[i][j] === targetCircle) {
+				direction.push(onClockwise);
+				direction.push(goingUp);
+			}
+		}
+		onClockwise = !onClockwise;
+	}
+	if (piece.level === 5) { //outer ring
+
+	}
+};
 
  movePiece = function (piece, targetCircle) {
 	if (pieceArray[targetCircle.level][targetCircle.row] === 'mt') {
@@ -373,8 +401,13 @@ function addPiece (that, type) {
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;
 		// and physically move it
-		piece.setX(targetCircle.getX());
-		piece.setY(targetCircle.getY());
+		piece.transitionTo({
+			x: targetCircle.getX(),
+			y: targetCircle.getY(),
+			duration: 1
+		})
+//		piece.setX(targetCircle.getX());
+//		piece.setY(targetCircle.getY());
 		// make murder if called for
 		emanateKill(piece);
 		gameState.nextTurn();
@@ -520,9 +553,9 @@ var whiteSymbol = new Kinetic.Circle ({
 			stroke: color,
 			strokeWidth: 4
 		});
-
 		chakraRing[i]=circle;
 	};
+	chakraRing.push(outerEdge);
 }());
 
 var targetArray = new Array();
