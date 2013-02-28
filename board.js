@@ -51,12 +51,13 @@ var pieceLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
-	x: gameStage.getHeight() / 2,
-	y: gameStage.getHeight() / 2,
+	x: gameStage.getHeight(),// gameStage.getHeight() / 2,
+	y: gameStage.getHeight(),// gameStage.getHeight() / 2,
 	radius: gameStage.getHeight()/2 - 0.1*gameStage.getHeight()/2,
 	fill: 'none',
-	stroke: 'none',
-	strokeWidth: 4
+	stroke: 'green',
+	strokeWidth: 4,
+	offset: [gameStage.getHeight()/2,gameStage.getHeight()/2]
 });
 
 var chakraRadius = outerEdge.getRadius()/2;
@@ -387,7 +388,18 @@ var chakras = getChakras(piece);
 		onClockwise = !onClockwise;
 	}
 	if (piece.level === 5) { //outer ring
-
+		slideGroup.add(outerEdge);
+		slideGroup.add(piece);
+		slideGroup.setX(outerEdge.getX()/2);
+		slideGroup.setY(outerEdge.getY()/2);
+		console.log(slideGroup);
+		pieceLayer.add(slideGroup);
+		slideGroup.setOffset(outerEdge.getOffset());
+		slideGroup.transitionTo({
+			rotation: 2*Math.PI,
+			duration: 4
+		});
+		pieceLayer.draw;
 	}
 };
 
@@ -398,14 +410,18 @@ var chakras = getChakras(piece);
 		//piece is in the array but doesn't know it
 		pieceArray[piece.level][piece.row] = 'mt';
 		//now we tell it
+		slidePiece(piece, targetCircle);
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;
 		// and physically move it
+/*
 		piece.transitionTo({
 			x: targetCircle.getX(),
 			y: targetCircle.getY(),
 			duration: 1
 		})
+*/
+
 //		piece.setX(targetCircle.getX());
 //		piece.setY(targetCircle.getY());
 		// make murder if called for
