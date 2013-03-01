@@ -452,6 +452,7 @@ slidePiece = function(piece, targetCircle) {
 				console.log("Chakranum is: " + chakraNum);
 				piece.remove();
 				slideGroup.add(piece);
+				slideGroup.add(chakraRing[chakraNum]);
 				slideGroup.setX(chakraRing[chakraNum].getX()/2);
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
@@ -642,6 +643,7 @@ var chakraRing = new Array();
 			fill: 'none',
 			stroke: color,
 			strokeWidth: 4,
+			dashArray: [10,5],
 			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles),
 						gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)]
 		});
