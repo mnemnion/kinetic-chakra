@@ -410,7 +410,7 @@ slidePiece = function(piece, targetCircle) {
 		slideGroup.setY(outerEdge.getY()/2);
 		console.log(slideGroup);
 		slideLayer.add(slideGroup);
-		slideGroup.setOffset(outerEdge.getOffset());
+		slideGroup.setOffset([outerEdge.getOffset()]);
 		if (direction[1]) {
 			radian = -2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles;
 		} else {
@@ -452,6 +452,7 @@ slidePiece = function(piece, targetCircle) {
 				console.log("Chakranum is: " + chakraNum);
 				piece.remove();
 				slideGroup.add(piece);
+				slideGroup.add(chakraRing[chakraNum]);
 				slideGroup.setX(chakraRing[chakraNum].getX()/2);
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
@@ -459,6 +460,7 @@ slidePiece = function(piece, targetCircle) {
 				console.log("on ring");
 				console.log(chakraRing[chakraNum]);
 				console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
+				console.log(slideGroup);
 				slideGroup.transitionTo({
 					rotation: 2*Math.PI,
 					duration: 2,
@@ -636,14 +638,15 @@ var chakraRing = new Array();
 		};
 
 		var circle = new Kinetic.Circle({
-			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
-			y: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
+			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
+			y: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
 			radius: chakraRadius,
 			fill: 'none',
 			stroke: color,
 			strokeWidth: 4,
-			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles),
-						gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)]
+			dashArray: [10,5],
+			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
+						gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
 		});
 		chakraRing[i]=circle;
 	};
@@ -660,8 +663,8 @@ var targetArray = new Array();
 		for (m=0; m<gameState.numCircles; m++) { 
 
 			var circle = new Kinetic.Circle({
-				x : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/gameState.numCircles),
-				y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
+				x : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
+				y : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/gameState.numCircles),
 				radius : chakraRadius/8,
 				fill: 'none',
 				stroke: 'none',
