@@ -372,12 +372,17 @@ slidePiece = function(piece, targetCircle) {
 	var direction = Array();
 	var slideGroup = new Kinetic.Group();
 	var found = false;
+	var innerRadius = 0;
 	// find out on which chakra is the target, in which direction
 	for (i = 0; i<=1; i++){
 		goingUp = true;
 		for (j=1; j<chakras[i].length; j++) {
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
+			if (chakras[i][j].level === chakras[i][j-1].level) {
+				innerRadius+=1; // accounting for the middle point
+			}
 			if (chakras[i][j] === targetCircle) {
+				innerRadius = innerRadius + j;
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				found = true; 
@@ -388,13 +393,20 @@ slidePiece = function(piece, targetCircle) {
 				break;
 			}
 		}
-		if (found) {break;}
+		if (found) {
+			break;
+		} 
+		innerRadius = 0;
 		goingUp = false;
 		for(j=chakras[i].length-1; j>=1; j--) {
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
+			if (chakras[i][j].level === chakras[i][j].level === 0) {
+				innerRadius++; // accounting for the middle point
+			}
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
+				innerRadius = innerRadius + j;
 			} else if (thisPiece !== 'mt') {
 				break;
 			}
@@ -458,11 +470,17 @@ slidePiece = function(piece, targetCircle) {
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
 				slideGroup.setOffset(chakraRing[chakraNum].getOffset());
-				console.log("on ring");
+				if(direction[1]) {
+					radian = -2*Math.PI*innerRadius/gameState.numCircles;
+				} else {
+					radian = 2*Math.PI*innerRadius/gameState.numCircles;
+				}
+				console.log("on ring:");
 				console.log(chakraRing[chakraNum]);
+				console.log("inner radius: " + innerRadius);
 				console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 				slideGroup.transitionTo({
-					rotation: 2*Math.PI,
+					rotation: radian,
 					duration: 2,
 					easing: 'ease-in-out',
 					callback: function() {
