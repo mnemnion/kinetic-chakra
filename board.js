@@ -457,6 +457,8 @@ slidePiece = function(piece, targetCircle) {
 			easing: 'ease-in-out',
 			callback: function() {
 				slideGroup.remove();
+				// make murder if called for
+				emanateKill(piece);
 				piece.setX(targetCircle.getX());
 				piece.setY(targetCircle.getY());
 				pieceLayer.add(piece);
@@ -514,6 +516,8 @@ slidePiece = function(piece, targetCircle) {
 					easing: 'ease-in-out',
 					callback: function() {
 						slideGroup.remove();
+						// make murder if called for
+						emanateKill(piece);
 						piece.setX(targetCircle.getX());
 						piece.setY(targetCircle.getY());
 						pieceLayer.add(piece);
@@ -547,8 +551,7 @@ slidePiece = function(piece, targetCircle) {
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;
 
-		// make murder if called for
-		emanateKill(piece);
+		
 		gameState.nextTurn();
 	} else {
 		console.log("cannot move piece to occupied zone");
