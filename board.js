@@ -635,6 +635,9 @@ var chakraRing = new Array();
 		} else {
 				color = 'maroon';
 		};
+		if (n===0) {
+			color = 'white';
+		}
 
 		var circle = new Kinetic.Circle({
 			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
@@ -671,6 +674,9 @@ var targetArray = new Array();
 			});
 			circle.level = n-1;
 			circle.row = m;
+			if (m===0) {
+				circle.setStroke("lightgrey");
+			}
 
 			circle.on('click', function(evt){
 
