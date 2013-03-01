@@ -407,7 +407,7 @@ slidePiece = function(piece, targetCircle) {
 		for(j=chakras[i].length-1; j>=1; j--) {
 			console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
-			if (chakras[i][j].level === chakras[i][j-1].level) {
+			if (chakras[i][j].level === chakras[i][j%(gameState.numCircles-1)].level) {
 				innerRadius+=1; // accounting for the middle point
 				console.log("center point detected");
 			}
@@ -425,10 +425,10 @@ slidePiece = function(piece, targetCircle) {
 			}
 		}
 
-		if (!goingUp && chakras[i][0].level === 0 && innerRadius === 1) {
-			innerRadius = 2;
-			console.log('unusual condition happened');
-		}
+	//	if (!goingUp && chakras[i][0].level === 0 && innerRadius === 1) {
+	//		innerRadius = 2;
+	//		console.log('unusual condition happened');
+	//	}
 		console.log("direction:");
 		console.log(direction);
 		onClockwise = !onClockwise;
@@ -718,14 +718,8 @@ var targetArray = new Array();
 			});
 			circle.level = n-1;
 			circle.row = m;
-			if (m===0) {
-				circle.setStroke("lightgrey");
-			} else if (m==3) {
-				circle.setStroke("violet");
-			}
-
+		
 			circle.on('click', function(evt){
-
 				if (!gameState.isSliding) {
 					if (pieceArray[this.level][this.row] === 'mt') {
 						if (gameState.whichMove === 'black') {
