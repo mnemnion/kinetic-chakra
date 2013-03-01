@@ -450,6 +450,7 @@ slidePiece = function(piece, targetCircle) {
 					}
 				}
 				console.log("Chakranum is: " + chakraNum);
+				chakraNum = cycleNumCircles(chakraNum, -1);
 				piece.remove();
 				slideGroup.add(piece);
 				slideGroup.add(chakraRing[chakraNum]);
@@ -637,6 +638,8 @@ var chakraRing = new Array();
 		};
 		if (n===0) {
 			color = 'white';
+		} else if (n===4) {
+			color = 'violet';
 		}
 
 		var circle = new Kinetic.Circle({
@@ -652,6 +655,7 @@ var chakraRing = new Array();
 		});
 		chakraRing[i]=circle;
 	};
+		chakraRing.reverse();
 	chakraRing.push(outerEdge);
 }());
 
@@ -676,6 +680,8 @@ var targetArray = new Array();
 			circle.row = m;
 			if (m===0) {
 				circle.setStroke("lightgrey");
+			} else if (m==3) {
+				circle.setStroke("violet");
 			}
 
 			circle.on('click', function(evt){
