@@ -372,23 +372,28 @@ slidePiece = function(piece, targetCircle) {
 	var direction = Array();
 	var slideGroup = new Kinetic.Group();
 	var found = false;
-	var innerRadius = 0;
+	
 	// find out on which chakra is the target, in which direction
 	for (i = 0; i<=1; i++){
+		if (found) {break};
+		var innerRadius = 0;
 		goingUp = true;
+		console.log("going up the " + i + " chakra");
 		for (j=1; j<chakras[i].length; j++) {
+			console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
 			if (chakras[i][j].level === chakras[i][j-1].level) {
 				innerRadius+=1; // accounting for the middle point
 			}
 			if (chakras[i][j] === targetCircle) {
+				console.log("targetCircle is " + i + " sub " + j);
 				innerRadius = innerRadius + j;
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				found = true; 
 				break;
 			} else if (thisPiece !== 'mt') {
-				console.log('thisPiece: ');
+				console.log('thisPiece blocks: ');
 				console.log(thisPiece);
 				break;
 			}
@@ -398,24 +403,35 @@ slidePiece = function(piece, targetCircle) {
 		} 
 		innerRadius = 0;
 		goingUp = false;
+		console.log("going down the " + i + " chakra");
 		for(j=chakras[i].length-1; j>=1; j--) {
+		console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
-			if (chakras[i][j].level === chakras[i][j].level === 0) {
-				innerRadius++; // accounting for the middle point
+			if (chakras[i][j].level === chakras[i][j-1].level) {
+				innerRadius+=1; // accounting for the middle point
+				console.log("center point detected");
 			}
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				innerRadius = innerRadius + j;
+				found = true;
+				break;
 			} else if (thisPiece !== 'mt') {
+				console.log('thisPiece blocks: ');
+				console.log(thisPiece);
 				break;
 			}
 		}
-		onClockwise = !onClockwise;
-	}
-	if (piece.level === 5 && !direction[0]) { //outer ring
 		console.log("direction:");
 		console.log(direction);
+		onClockwise = !onClockwise;
+	}
+		console.log("direction:");
+		console.log(direction);
+
+	if (piece.level === 5 && !direction[0]) { //outer ring
+
 		piece.remove();
 		slideGroup.add(piece);
 		slideGroup.setX(outerEdge.getX()/2);
@@ -470,10 +486,18 @@ slidePiece = function(piece, targetCircle) {
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
 				slideGroup.setOffset(chakraRing[chakraNum].getOffset());
-				if(direction[1]) {
+				if(direction[1] && !direction[0]) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
-				} else {
+					console.log("this works?"); // yes it does
+				} else if (direction[1] && direction[0]) {
 					radian = 2*Math.PI*innerRadius/gameState.numCircles;
+					console.log("this works also?"); // yep
+				} else if (!direction[1] && direction[0]) {
+					radian = -2*Math.PI*cycleNumCircles(2,-innerRadius)/gameState.numCircles;
+					console.log('when does this happen?');
+				} else {
+					radian = 2*Math.PI*cycleNumCircles(0,-innerRadius)/gameState.numCircles;;
+					console.log("lastly, this happens sometimes"); // correctly
 				}
 				console.log("on ring:");
 				console.log(chakraRing[chakraNum]);
