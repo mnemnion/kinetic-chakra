@@ -407,14 +407,15 @@ slidePiece = function(piece, targetCircle) {
 		for(j=chakras[i].length-1; j>=1; j--) {
 		console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
-			if (chakras[i][j].level === chakras[i][j-1].level) {
+			if (chakras[i][j].level === chakras[i][j-1].level || chakras[i][0].level === chakras[i][j].level) {
 				innerRadius+=1; // accounting for the middle point
 				console.log("center point detected");
 			}
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
-				innerRadius = innerRadius + j;
+				innerRadius = innerRadius+(11-j);
+				console.log("innerRadius: " + innerRadius);
 				found = true;
 				break;
 			} else if (thisPiece !== 'mt') {
@@ -493,7 +494,7 @@ slidePiece = function(piece, targetCircle) {
 					radian = 2*Math.PI*innerRadius/gameState.numCircles;
 					console.log("this works also?"); // yep
 				} else if (!direction[1] && direction[0]) {
-					radian = -2*Math.PI*cycleNumCircles(2,-innerRadius)/gameState.numCircles;
+					radian = -2*Math.PI*innerRadius/gameState.numCircles;
 					console.log('when does this happen?');
 				} else {
 					radian = 2*Math.PI*cycleNumCircles(0,-innerRadius)/gameState.numCircles;;
