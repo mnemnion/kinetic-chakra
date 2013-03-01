@@ -405,9 +405,9 @@ slidePiece = function(piece, targetCircle) {
 		goingUp = false;
 		console.log("going down the " + i + " chakra");
 		for(j=chakras[i].length-1; j>=1; j--) {
-		console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
+			console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
-			if (chakras[i][j].level === chakras[i][j-1].level || chakras[i][0].level === chakras[i][j].level) {
+			if (chakras[i][j].level === chakras[i][j-1].level) {
 				innerRadius+=1; // accounting for the middle point
 				console.log("center point detected");
 			}
@@ -424,6 +424,11 @@ slidePiece = function(piece, targetCircle) {
 				break;
 			}
 		}
+
+		if (!goingUp && chakras[i][0].level === 0 && innerRadius === 1) {
+			innerRadius = 2;
+			console.log('unusual condition happened');
+		}
 		console.log("direction:");
 		console.log(direction);
 		onClockwise = !onClockwise;
@@ -437,9 +442,8 @@ slidePiece = function(piece, targetCircle) {
 		slideGroup.add(piece);
 		slideGroup.setX(outerEdge.getX()/2);
 		slideGroup.setY(outerEdge.getY()/2);
-		console.log(slideGroup);
-		slideLayer.add(slideGroup);
 		slideGroup.setOffset(outerEdge.getOffset());
+		slideLayer.add(slideGroup);
 		if (direction[1]) {
 			radian = -2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles;
 		} else {
@@ -482,7 +486,6 @@ slidePiece = function(piece, targetCircle) {
 				chakraNum = cycleNumCircles(chakraNum, -1);
 				piece.remove();
 				slideGroup.add(piece);
-				slideGroup.add(chakraRing[chakraNum]);
 				slideGroup.setX(chakraRing[chakraNum].getX()/2);
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
@@ -497,7 +500,7 @@ slidePiece = function(piece, targetCircle) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
 					console.log('when does this happen?');
 				} else {
-					radian = 2*Math.PI*cycleNumCircles(0,-innerRadius)/gameState.numCircles;;
+					radian = 2*Math.PI*innerRadius/gameState.numCircles;;
 					console.log("lastly, this happens sometimes"); // correctly
 				}
 				console.log("on ring:");
@@ -679,11 +682,6 @@ var chakraRing = new Array();
 		} else {
 				color = 'maroon';
 		};
-		if (n===0) {
-			color = 'white';
-		} else if (n===4) {
-			color = 'violet';
-		}
 
 		var circle = new Kinetic.Circle({
 			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
@@ -692,7 +690,6 @@ var chakraRing = new Array();
 			fill: 'none',
 			stroke: color,
 			strokeWidth: 4,
-			dashArray: [10,5],
 			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
 						gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
 		});
