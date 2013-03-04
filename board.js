@@ -200,6 +200,29 @@ var getGroup = function (piece, group, color) {
 	return group;
 };
 
+var getEmptyGroup = function (target, group) {
+	if (group === undefined) {
+		var group = Array();
+	} // create our container if we're at the top of the descent path
+
+	if (pieceArray[target.level][target.row] === 'mt') {
+		group.push(target); // add the target in question.
+		var buddies = getAdjacentLiberties(target); // get all friends
+		for (var i=0; i<buddies.length;i++) {
+			var notInGroup = true;
+			for (var j=0; j<group.length;j++) {
+				if (buddies[i] === group[j]) {
+					notInGroup = false;
+				}
+			}
+			if (notInGroup === true) {
+				getGroup(buddies[i],group);
+			}
+		} 
+	}
+	return group;
+};
+
 var cycleArray = function(toBeCycled, index, numTimes) {
 	// cycles upwards through array toBeCycled, starting at index, numTimes.
 	var catcher = Array();
@@ -426,10 +449,6 @@ slidePiece = function(piece, targetCircle) {
 			}
 		}
 
-	//	if (!goingUp && chakras[i][0].level === 0 && innerRadius === 1) {
-	//		innerRadius = 2;
-	//		console.log('unusual condition happened');
-	//	}
 		console.log("direction:");
 		console.log(direction);
 		onClockwise = !onClockwise;
@@ -794,8 +813,10 @@ var targetArray = new Array();
 				}
 
 				if(gameState.showGroups) {
-					if(pieceArray[this.level][this.row] !== 'mt'){
-						var group = getGroup(pieceArray[this.level][this.row]);
+					if(pieceArray[this.level][this.row] === 'mt'){
+						var group = getEmptyGroup(targetArray[this.level][this.row]);
+						console.log("empty group:");
+						console.log(group);
 						for (var i=0; i<group.length; i++) {
 							targetArray[group[i].level][group[i].row].setStroke('blue');
 							targetArray[group[i].level][group[i].row].setStrokeWidth(3);
