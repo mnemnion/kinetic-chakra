@@ -609,9 +609,10 @@ var flipWhiteBlack = function() {
 	}
 	return flipIt;
 }
+flipWhiteBlack();
 
 
-(function() {
+var clickPass = (function() {
 	var passButton = new Kinetic.Rect ({
 		x: gameStage.getWidth()*4/5,
 		y: gameStage.getHeight()*2/5,
@@ -653,11 +654,15 @@ var flipWhiteBlack = function() {
 			})}
 		})
 	});
+	var clickThis = function(){
+		buttonText.simulate('click');
+	}
 
 	targetLayer.add(passButton);
 	targetLayer.add(flashButton);
 	targetLayer.add(buttonText);
 	targetLayer.draw();
+	return clickThis;
 }());
 
 (function() {
@@ -921,6 +926,13 @@ gameStage.add(boardLayer);
 gameStage.add(targetLayer);
 gameStage.add(pieceLayer);
 gameStage.add(slideLayer);
+// key press handlers
+document.onkeypress=(function(e){
+	if (e.keyCode === 32) {
+		console.log("space bar pressed");
+		clickPass();
+	}
+});
 console.log("ready");
 
 //}());
