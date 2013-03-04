@@ -204,10 +204,11 @@ var getEmptyGroup = function (target, group) {
 	if (group === undefined) {
 		var group = Array();
 	} // create our container if we're at the top of the descent path
-
 	if (pieceArray[target.level][target.row] === 'mt') {
 		group.push(target); // add the target in question.
-		var buddies = getAdjacentLiberties(target); // get all friends
+		var buddies = getAdjacentLiberties(target);
+		console.log('buddies:');
+		console.log(buddies); // get all friends
 		for (var i=0; i<buddies.length;i++) {
 			var notInGroup = true;
 			for (var j=0; j<group.length;j++) {
@@ -216,7 +217,8 @@ var getEmptyGroup = function (target, group) {
 				}
 			}
 			if (notInGroup === true) {
-				getGroup(buddies[i],group);
+				console.log("recurse");
+				getEmptyGroup(buddies[i],group);
 			}
 		} 
 	}
