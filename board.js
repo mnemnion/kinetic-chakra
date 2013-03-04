@@ -610,6 +610,7 @@ var flipWhiteBlack =(function() {
 	}
 	return flipIt;
 }());
+
 flipWhiteBlack();
 
 
@@ -641,10 +642,11 @@ var clickPass = (function() {
 		fontFamily: 'Calibri',
 		fill: 'black',
 		width: passButton.getWidth(),
-		align: 'center'
+		align: 'center',
+		listening: false
 	})
 
-	buttonText.on('click', function(evt){
+	flashButton.on('click', function(evt){
 		gameState.nextTurn();
 		flashButton.transitionTo({
 			opacity: 1,
@@ -656,7 +658,7 @@ var clickPass = (function() {
 		})
 	});
 	var clickThis = function(){
-		buttonText.simulate('click');
+		flashButton.simulate('click');
 	}
 
 	targetLayer.add(passButton);
