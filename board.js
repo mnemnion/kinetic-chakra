@@ -583,7 +583,7 @@ calculateWin = function() {
 
 
 
-var flipWhiteBlack = function() {
+var flipWhiteBlack =(function() {
 	var whiteCircle = new Kinetic.Circle ({
 		x: gameStage.getWidth()*4/5 + 75 - chakraRadius/8,
 		y: gameStage.getHeight() * 1/7,
@@ -601,6 +601,7 @@ var flipWhiteBlack = function() {
 	blackCircle.moveToTop();
 	targetLayer.draw;
 	var flipIt = function() {
+		console.log('flipping');
 		if (gameState.whichMove === 'black') {
 			blackCircle.moveToTop();
 		} else {
@@ -608,7 +609,7 @@ var flipWhiteBlack = function() {
 		}
 	}
 	return flipIt;
-}
+}());
 flipWhiteBlack();
 
 
