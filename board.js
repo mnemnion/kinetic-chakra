@@ -207,8 +207,7 @@ var getEmptyGroup = function (target, group) {
 	if (pieceArray[target.level][target.row] === 'mt') {
 		group.push(target); // add the target in question.
 		var buddies = getAdjacentLiberties(target);
-		console.log('buddies:');
-		console.log(buddies); // get all friends
+	
 		for (var i=0; i<buddies.length;i++) {
 			var notInGroup = true;
 			for (var j=0; j<group.length;j++) {
@@ -217,7 +216,6 @@ var getEmptyGroup = function (target, group) {
 				}
 			}
 			if (notInGroup === true) {
-				console.log("recurse");
 				getEmptyGroup(buddies[i],group);
 			}
 		} 
@@ -474,7 +472,7 @@ slidePiece = function(piece, targetCircle) {
 		console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 		slideGroup.transitionTo({
 			rotation: radian,
-			duration: 2,
+			duration: 0.2*innerRadius,
 			easing: 'ease-in-out',
 			callback: function() {
 				slideGroup.remove();
@@ -533,7 +531,7 @@ slidePiece = function(piece, targetCircle) {
 				console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 				slideGroup.transitionTo({
 					rotation: radian,
-					duration: 2,
+					duration: 0.3*innerRadius,
 					easing: 'ease-in-out',
 					callback: function() {
 						slideGroup.remove();
@@ -548,13 +546,6 @@ slidePiece = function(piece, targetCircle) {
 				});
 				console.log(piece.getX(),piece.getY());
 
-/*
-			piece.transitionTo({
-			x: targetCircle.getX(),
-			y: targetCircle.getY(),
-			duration: 1
-		});
-*/
 		}
 	return piece;
 };
@@ -592,7 +583,7 @@ calculateWin = function() {
 
 
 
-var makeFlipper = function() {
+var flipWhiteBlack = function() {
 	var whiteCircle = new Kinetic.Circle ({
 		x: gameStage.getWidth()*4/5 + 75 - chakraRadius/8,
 		y: gameStage.getHeight() * 1/7,
@@ -618,8 +609,7 @@ var makeFlipper = function() {
 	}
 	return flipIt;
 }
-var flipWhiteBlack = makeFlipper();
-flipWhiteBlack();
+
 
 (function() {
 	var passButton = new Kinetic.Rect ({
@@ -631,6 +621,15 @@ flipWhiteBlack();
 		fill: 'maroon',
 		stroke: 'black',
 		strokeWidth: 2
+	})
+	var flashButton = new Kinetic.Rect({
+		x: passButton.getX(),
+		y: passButton.getY(),
+		cornerRadius: passButton.getCornerRadius(),
+		height: passButton.getHeight(),
+		width: passButton.getWidth(),
+		fill: 'red',
+		opacity: 0
 	})
 	var buttonText = new Kinetic.Text ({
 		x: passButton.getX(),
@@ -645,11 +644,18 @@ flipWhiteBlack();
 
 	buttonText.on('click', function(evt){
 		gameState.nextTurn();
-		passButton.setFill('red');
-		targetLayer.draw();
+		flashButton.transitionTo({
+			opacity: 1,
+			duration: 0.25,
+			callback: function() {flashButton.transitionTo({
+				opacity: 0,
+				duration: 0.25
+			})}
+		})
 	});
 
 	targetLayer.add(passButton);
+	targetLayer.add(flashButton);
 	targetLayer.add(buttonText);
 	targetLayer.draw();
 }());
@@ -684,14 +690,6 @@ flipWhiteBlack();
 	targetLayer.add(groupsButton);
 	targetLayer.draw();
 }());
-
-var whiteSymbol = new Kinetic.Circle ({
-
-});
-
-
-
-
 
 
 
@@ -816,9 +814,7 @@ var targetArray = new Array();
 
 				if(gameState.showGroups) {
 					if(pieceArray[this.level][this.row] === 'mt'){
-						var group = getEmptyGroup(targetArray[this.level][this.row]);
-						console.log("empty group:");
-						console.log(group);
+						var group = getEmptyGroup(this);
 						for (var i=0; i<group.length; i++) {
 							targetArray[group[i].level][group[i].row].setStroke('blue');
 							targetArray[group[i].level][group[i].row].setStrokeWidth(3);
@@ -831,10 +827,8 @@ var targetArray = new Array();
 			circle.on('mouseleave', function(evt){
 				if(!gameState.isSliding) {
 					this.setStroke('none');
-					targetLayer.draw(); 
 				} else if (!gameState.sliderSelected) {
 					this.setStroke('none');
-					targetLayer.draw();
 				}
 				if(gameState.showChakras) {
 					var buddies = getChakras(this);
@@ -847,7 +841,6 @@ var targetArray = new Array();
 						buddies[1][i].setStroke('none');
 						buddies[1][i].setStrokeWidth(2);
 					}
-					targetLayer.draw();
 				}
 
 				 if(gameState.showSliding) {
@@ -861,13 +854,12 @@ var targetArray = new Array();
 								console.log("undefined targetCircle found in getSlideable return value");
 							}
 						}
-					targetLayer.draw();
 					}
 				}
 
 				if(gameState.showGroups) {
-					if(pieceArray[this.level][this.row] !== 'mt') {
-						var group = getGroup(pieceArray[this.level][this.row]);
+					if(pieceArray[this.level][this.row] === 'mt') {
+						var group = getEmptyGroup(this);
 						for (var i=0; i<group.length; i++) {
 							//               console.log('turning off circles')
 							targetArray[group[i].level][group[i].row].setStroke('none');
