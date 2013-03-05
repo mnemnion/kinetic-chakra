@@ -202,16 +202,15 @@ var getGroup = function (piece, group, color) {
 
 var getEmptyGroup = function (target, group) {
 	if (group === undefined) {
-		var group = Array();
+		var group = [[],[],[]];
 	} // create our container if we're at the top of the descent path
 	if (pieceArray[target.level][target.row] === 'mt') {
-		group.push(target); // add the target in question.
-		var buddies = getAdjacentLiberties(target);
-	
+		group[0].push(target); // add the target in question.
+		var buddies = getAdjacentTargets(target);
 		for (var i=0; i<buddies.length;i++) {
 			var notInGroup = true;
-			for (var j=0; j<group.length;j++) {
-				if (buddies[i] === group[j]) {
+			for (var j=0; j<group[0].length;j++) {
+				if (buddies[i] === group[0][j]) {
 					notInGroup = false;
 				}
 			}
@@ -219,7 +218,20 @@ var getEmptyGroup = function (target, group) {
 				getEmptyGroup(buddies[i],group);
 			}
 		} 
+	} 
+
+	else if (pieceArray[target.level][target.row].getFill() === 'black') {
+		var notInGroup = true;
+		for (var i=0; i<group[1].length; i++) {
+			if (pieceArray[target.level][target.row] === group[1][i]) {
+				notInGroup = false;
+			}
+		}
+		if (notInGroup) {
+			group[1].push(pieceArray[target.level][target.row]);
+		}
 	}
+
 	return group;
 };
 
@@ -601,7 +613,6 @@ var flipWhiteBlack =(function() {
 	blackCircle.moveToTop();
 	targetLayer.draw;
 	var flipIt = function() {
-		console.log('flipping');
 		if (gameState.whichMove === 'black') {
 			blackCircle.moveToTop();
 		} else {
@@ -610,8 +621,6 @@ var flipWhiteBlack =(function() {
 	}
 	return flipIt;
 }());
-
-flipWhiteBlack();
 
 
 var clickPass = (function() {
@@ -623,7 +632,10 @@ var clickPass = (function() {
 		width: 150,
 		fill: 'maroon',
 		stroke: 'black',
-		strokeWidth: 2
+		strokeWidth: 2,
+		shadowOffset: 4,
+		shadowBlur: 5,
+		shadowOpacity: 0.5
 	})
 	var flashButton = new Kinetic.Rect({
 		x: passButton.getX(),
@@ -823,9 +835,9 @@ var targetArray = new Array();
 				if(gameState.showGroups) {
 					if(pieceArray[this.level][this.row] === 'mt'){
 						var group = getEmptyGroup(this);
-						for (var i=0; i<group.length; i++) {
-							targetArray[group[i].level][group[i].row].setStroke('blue');
-							targetArray[group[i].level][group[i].row].setStrokeWidth(3);
+						for (var i=0; i<group[0].length; i++) {
+							targetArray[group[0][i].level][group[0][i].row].setStroke('blue');
+							targetArray[group[0][i].level][group[0][i].row].setStrokeWidth(3);
 						}
 					}
 				}
@@ -868,10 +880,10 @@ var targetArray = new Array();
 				if(gameState.showGroups) {
 					if(pieceArray[this.level][this.row] === 'mt') {
 						var group = getEmptyGroup(this);
-						for (var i=0; i<group.length; i++) {
+						for (var i=0; i<group[0].length; i++) {
 							//               console.log('turning off circles')
-							targetArray[group[i].level][group[i].row].setStroke('none');
-							targetArray[group[i].level][group[i].row].setStrokeWidth(2);
+							targetArray[group[0][i].level][group[0][i].row].setStroke('none');
+							targetArray[group[0][i].level][group[0][i].row].setStrokeWidth(2);
 						}
 					}  
 				}
@@ -932,7 +944,7 @@ gameStage.add(slideLayer);
 // key press handlers
 document.onkeypress=(function(e){
 	if (e.keyCode === 32) {
-		console.log("space bar pressed");
+	//	console.log("space bar pressed");
 		clickPass();
 	}
 });
