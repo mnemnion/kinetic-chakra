@@ -231,7 +231,17 @@ var getEmptyGroup = function (target, group) {
 			group[1].push(pieceArray[target.level][target.row]);
 		}
 	}
-
+	else if (pieceArray[target.level][target.row].getFill() === 'white') {
+		var notInGroup = true;
+		for (var i=0; i<group[2].length; i++) {
+			if (pieceArray[target.level][target.row] === group[2][i]) {
+				notInGroup = false;
+			}
+		}
+		if (notInGroup) {
+			group[2].push(pieceArray[target.level][target.row]);
+		}
+	}
 	return group;
 };
 
@@ -835,9 +845,18 @@ var targetArray = new Array();
 				if(gameState.showGroups) {
 					if(pieceArray[this.level][this.row] === 'mt'){
 						var group = getEmptyGroup(this);
+						console.log(group);
 						for (var i=0; i<group[0].length; i++) {
 							targetArray[group[0][i].level][group[0][i].row].setStroke('blue');
 							targetArray[group[0][i].level][group[0][i].row].setStrokeWidth(3);
+						}
+						for (i=0; i<group[1].length; i++) {
+							targetArray[group[1][i].level][group[1][i].row].setStroke('yellow');
+							targetArray[group[1][i].level][group[1][i].row].setStrokeWidth(3);
+						}
+						for (i=0; i<group[2].length; i++) {
+							targetArray[group[2][i].level][group[2][i].row].setStroke('purple');
+							targetArray[group[2][i].level][group[2][i].row].setStrokeWidth(3);
 						}
 					}
 				}
@@ -880,10 +899,12 @@ var targetArray = new Array();
 				if(gameState.showGroups) {
 					if(pieceArray[this.level][this.row] === 'mt') {
 						var group = getEmptyGroup(this);
-						for (var i=0; i<group[0].length; i++) {
-							//               console.log('turning off circles')
-							targetArray[group[0][i].level][group[0][i].row].setStroke('none');
-							targetArray[group[0][i].level][group[0][i].row].setStrokeWidth(2);
+						for (var j=0; j<group.length; j++) {
+							for (var i=0; i<group[j].length; i++) {
+								//               console.log('turning off circles')
+								targetArray[group[j][i].level][group[j][i].row].setStroke('none');
+								targetArray[group[j][i].level][group[j][i].row].setStrokeWidth(2);
+							}
 						}
 					}  
 				}
