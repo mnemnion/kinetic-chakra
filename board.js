@@ -594,6 +594,43 @@ slidePiece = function(piece, targetCircle) {
 }
 
 calculateWin = function() {
+	// start with number of captures
+	var blackScore = gameState.blackCaptures;
+	var whiteScore = gameState.whiteCaptures;
+
+	// get all empty groups
+	// first get all empty spaces
+	var empties = Array();
+	var groups = Array();
+	for (var i=0; i<targetArray.length; i++) {
+		for (var j=0; j<targetArray[i].length; j++) {
+			if (pieceArray[i][j] === 'mt') {
+				empties.push(targetArray[i][j]);
+				empties[empties.length-1].grouped = false;
+			}
+		}
+	}
+	console.log(empties);
+	// take each empty space, get the group it's in
+	for (i=0; i<empties.length; i++) {
+		if(!empties[i].grouped) {
+			groups.push(getEmptyGroup(empties[i]));
+			for (j=0; j<groups[groups.length-1][0].length; j++) {
+				// subtract all empty spaces in that group from consideration
+				for (var m=0; m<empties.length; m++) {
+					if (groups[groups.length-1][0][j] === empties[m]) {
+						empties[m].grouped = true;
+					}
+				}
+			}
+		}
+	}
+	console.log(groups);
+	
+	// continue until all empties have been grouped
+	// determine which ones are territory and add to total
+
+	// bob's your uncle
 
 };
 
