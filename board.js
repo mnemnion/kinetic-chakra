@@ -1014,9 +1014,14 @@ gameStage.add(pieceLayer);
 gameStage.add(slideLayer);
 // key press handlers
 document.onkeypress=(function(e){
+	//apparently handling keycodes directly is brittle, varying from browser to browser. rewrite. 
 	if (e.keyCode === 32) {
 	//	console.log("space bar pressed");
 		clickPass();
+	}
+	if (e.keyCode === 116) { // t key
+		console.log("t key pressed");
+		calculateWin();
 	}
 });
 console.log("ready");
