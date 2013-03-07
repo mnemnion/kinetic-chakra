@@ -626,10 +626,23 @@ calculateWin = function() {
 		}
 	}
 	console.log(groups);
+	// remove the grouped property entirely 
+	for (var i=0; i<targetArray.length; i++) {
+		for (var j=0; j<targetArray[i].length; j++) {
+			delete targetArray[i][j].grouped;
+		}
+	}
 	
-	// continue until all empties have been grouped
 	// determine which ones are territory and add to total
-
+	for (var i=0; i< groups.length; i++) {
+		if (groups[i][1].length>1 && groups[i][2].length===0) { //black group
+			blackScore += groups[i][0].length;
+		} else if (groups[i][2].length>1 && groups[i][1].length ===0 ) {
+			whiteScore += groups[i][2].length;
+		}
+	}
+	console.log("black score is: " + blackScore);
+	console.log("white score is: " + whiteScore);
 	// bob's your uncle
 
 };
