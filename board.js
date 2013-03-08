@@ -643,6 +643,7 @@ calculateWin = function() {
 	}
 	console.log("black score is: " + blackScore);
 	console.log("white score is: " + whiteScore);
+	alert("Black Score is: " + blackScore + '\n' + "White Score is: " + whiteScore);
 	// bob's your uncle
 
 };
