@@ -638,7 +638,7 @@ calculateWin = function() {
 		if (groups[i][1].length>1 && groups[i][2].length===0) { //black group
 			blackScore += groups[i][0].length;
 		} else if (groups[i][2].length>1 && groups[i][1].length ===0 ) {
-			whiteScore += groups[i][2].length;
+			whiteScore += groups[i][0].length;
 		}
 	}
 	console.log("black score is: " + blackScore);
