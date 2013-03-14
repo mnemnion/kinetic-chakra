@@ -368,6 +368,12 @@ countLiberties = function(group) {
 
 killGroup = function(enemyGroup) {
 	console.log("Bang! You're dead");
+	var killMove = {
+		type: 'kill',
+		color: enemyGroup[0].getFill(),
+		pieces: []
+	};
+
 	if(enemyGroup[0].getFill()==='black'){
 		gameState.whiteCaptures += enemyGroup.length;
 		console.log("White has captured " + gameState.whiteCaptures + " stones so far");
@@ -378,9 +384,24 @@ killGroup = function(enemyGroup) {
 		console.log("destroying:");
 		console.log(enemyGroup);
 	for (i=0; i<enemyGroup.length; i++) {
+		var deadPiece = {
+			level: enemyGroup[i].level,
+			row: enemyGroup[i].row, 
+		}
+		killMove.pieces.push(deadPiece);
 		pieceArray[enemyGroup[i].level][enemyGroup[i].row] = 'mt';
 		enemyGroup[i].setFill('none');
 	}
+	pieceLayer.draw();
+	moveArray.push(killMove);
+	moveBase.set(moveArray);
+}
+
+removeBogusPiece = function(piece) {
+	pieceArray[piece.level][piece.row] = 'mt';
+	piece.setFill('none');
+	moveArray.pop();
+	moveBase.set(moveArray);
 	pieceLayer.draw();
 }
 
@@ -412,16 +433,17 @@ function addPiece (that, type) {
 		newPiece.level  = that.level;
 		pieceArray[that.level][that.row] = newPiece;
 		pieceLayer.add(newPiece);
+		gameStatePieceAdded(newPiece);
 		emanateKill(newPiece);
 		 // check for four surrounding enemies
 		noAtari = getGroup(newPiece);
 		var isOk = true;
 		numLiberties = countLiberties(noAtari);
 		if (numLiberties === 0) {
-			killGroup([newPiece]);  
-		} else {
-			gameStatePieceAdded(newPiece);
-		}
+			removeBogusPiece(newPiece);  
+		} 
+			
+
 		pieceLayer.draw();
 };
 
