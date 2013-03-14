@@ -19,6 +19,17 @@ var gameState = {
 	showSliding: false
 };
 
+var chakraGamesRef = new Firebase('https://chakra.firebaseIO.com/games/');
+
+var gameBase = chakraGamesRef.push();
+gameBase.set({gameState: gameState});
+var fooArray = [1, 2, 3];
+var fooObject = {};
+fooObject[fooArray[0]] = 'one';
+
+
+gameBase.update(fooObject);
+
 gameState.nextTurn = function() {
 	if (this.whichMove === 'black') {
 		this.whichMove = 'white';
