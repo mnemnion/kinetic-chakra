@@ -854,7 +854,10 @@ var targetArray = new Array();
 						if (pieceArray[this.level][this.row] !=='mt'){
 							if(pieceArray[this.level][this.row].getFill()===gameState.whichMove){
 								var slideTargets = getSlideable(pieceArray[this.level][this.row]);
-								gameState.slider = pieceArray[this.level][this.row];
+								gameState.slider = {
+									level: this.level,
+									row: this.row
+								};
 								gameState.sliderSelected = true;
 								for (var i=0; i<slideTargets.length;i++) {
 									slideTargets[i].setStroke('lightgreen');
@@ -865,7 +868,7 @@ var targetArray = new Array();
 						} 
 				} else if (gameState.sliderSelected) { //slider selected
 					if (slideArray[this.level][this.row] !== 'mt') {
-						movePiece(gameState.slider,slideArray[this.level][this.row]);
+						movePiece(pieceArray[gameState.slider.level][gameState.slider.row],slideArray[this.level][this.row]);
 						delete gameState['slider'];
 					}
 				}
