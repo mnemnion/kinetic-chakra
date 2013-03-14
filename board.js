@@ -22,13 +22,10 @@ var gameState = {
 var chakraGamesRef = new Firebase('https://chakra.firebaseIO.com/games/');
 
 var gameBase = chakraGamesRef.push();
-gameBase.set({gameState: gameState});
-var fooArray = [1, 2, 3];
-var fooObject = {};
-fooObject[fooArray[0]] = 'one';
+var moveBase = gameBase.child('moves');
 
+var moveArray = [];
 
-gameBase.update(fooObject);
 
 gameStateNextTurn = function() {
 	if (gameState.whichMove === 'black') {
@@ -50,8 +47,16 @@ gameStateNextTurn = function() {
 	console.log('next turn');
 }
 
-gameStatePieceAdded = function() {
+gameStatePieceAdded = function(piece) {
 	gameState.isSliding = true;
+	gameBase.set({gameState: gameState});
+	moveArray.push({
+		type: 'add',
+		color: piece.getFill(),
+		level: piece.level,
+		row: piece.row
+	})
+	moveBase.set(moveArray);
 	console.log('piece added');
 }
 
@@ -415,7 +420,7 @@ function addPiece (that, type) {
 		if (numLiberties === 0) {
 			killGroup([newPiece]);  
 		} else {
-			gameStatePieceAdded();
+			gameStatePieceAdded(newPiece);
 		}
 		pieceLayer.draw();
 };
@@ -861,6 +866,7 @@ var targetArray = new Array();
 				} else if (gameState.sliderSelected) { //slider selected
 					if (slideArray[this.level][this.row] !== 'mt') {
 						movePiece(gameState.slider,slideArray[this.level][this.row]);
+						delete gameState['slider'];
 					}
 				}
 				targetLayer.draw();
