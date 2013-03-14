@@ -30,15 +30,15 @@ fooObject[fooArray[0]] = 'one';
 
 gameBase.update(fooObject);
 
-gameState.nextTurn = function() {
-	if (this.whichMove === 'black') {
-		this.whichMove = 'white';
+gameStateNextTurn = function() {
+	if (gameState.whichMove === 'black') {
+		gameState.whichMove = 'white';
 	} else {
-		this.whichMove = 'black';
+		gameState.whichMove = 'black';
 	}
 	flipWhiteBlack();
-	this.isSliding = false;
-	this.sliderSelected = false;
+	gameState.isSliding = false;
+	gameState.sliderSelected = false;
 	for (i=0; i < 6; i++) {
 		for(j=0; j < gameState.numCircles; j++) {
 			slideArray[i][j] = 'mt';
@@ -50,8 +50,8 @@ gameState.nextTurn = function() {
 	console.log('next turn');
 }
 
-gameState.pieceAdded = function() {
-	this.isSliding = true;
+gameStatePieceAdded = function() {
+	gameState.isSliding = true;
 	console.log('piece added');
 }
 
@@ -415,7 +415,7 @@ function addPiece (that, type) {
 		if (numLiberties === 0) {
 			killGroup([newPiece]);  
 		} else {
-			gameState.pieceAdded();
+			gameStatePieceAdded();
 		}
 		pieceLayer.draw();
 };
@@ -597,7 +597,7 @@ slidePiece = function(piece, targetCircle) {
 		piece.row = targetCircle.row;
 
 		
-		gameState.nextTurn();
+		gameStateNextTurn();
 	} else {
 		console.log("cannot move piece to occupied zone");
 	}
@@ -731,7 +731,7 @@ var clickPass = (function() {
 	})
 
 	flashButton.on('click', function(evt){
-		gameState.nextTurn();
+		gameStateNextTurn();
 		flashButton.transitionTo({
 			opacity: 1,
 			duration: 0.25,
