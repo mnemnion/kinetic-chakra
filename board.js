@@ -41,6 +41,12 @@ gameStateNextTurn = function() {
 	flipWhiteBlack();
 	gameState.isSliding = false;
 	gameState.sliderSelected = false;
+	for (i=0; i < 6; i++) {
+		for(j=0; j < gameState.numCircles; j++) {
+			slideArray[i][j] = 'mt';
+			targetArray[i][j].setStroke('none');
+		}
+	}
 	gameBase.update({gameState: gameState});
 	targetLayer.draw();
 	console.log('next turn');
@@ -582,7 +588,7 @@ slidePiece = function(piece, targetCircle) {
 	return piece;
 };
 
- movePiece = function (piece, targetCircle) {
+movePiece = function (piece, targetCircle) {
 	if (pieceArray[targetCircle.level][targetCircle.row] === 'mt') {
 		console.log('moving piece to ' + targetCircle.level + " sub " + targetCircle.row);
 		pieceArray[targetCircle.level][targetCircle.row] = piece;
@@ -902,17 +908,6 @@ var targetArray = new Array();
 						}
 					}
 				}
-				if(gameState.showChakras) {
-					var buddies = getChakras(this);
-					for (var i=0; i<buddies[0].length; i++) {
-						buddies[0][i].setStroke('lightgreen');
-						buddies[0][i].setStrokeWidth(2);
-					}
-					for (var i=0; i<buddies[1].length; i++) {
-						buddies[1][i].setStroke('lightblue');
-						buddies[1][i].setStrokeWidth(2);
-					} 
-				}
 				if(gameState.showSliding) {
 					if (pieceArray[this.level][this.row] !=='mt'){
 						var slideTargets = getSlideable(pieceArray[this.level][this.row]);
@@ -925,50 +920,17 @@ var targetArray = new Array();
 							}
 						}
 					}
-				targetLayer.draw();
-				}
-
-				if(gameState.showGroups) {
-					if(pieceArray[this.level][this.row] === 'mt'){
-						var group = getEmptyGroup(this);
-						console.log(group);
-						for (var i=0; i<group[0].length; i++) {
-							targetArray[group[0][i].level][group[0][i].row].setStroke('blue');
-							targetArray[group[0][i].level][group[0][i].row].setStrokeWidth(3);
-						}
-						for (i=0; i<group[1].length; i++) {
-							targetArray[group[1][i].level][group[1][i].row].setStroke('yellow');
-							targetArray[group[1][i].level][group[1][i].row].setStrokeWidth(3);
-						}
-						for (i=0; i<group[2].length; i++) {
-							targetArray[group[2][i].level][group[2][i].row].setStroke('purple');
-							targetArray[group[2][i].level][group[2][i].row].setStrokeWidth(3);
-						}
-					}
 				}
 				targetLayer.draw();
 			});
 
 			circle.on('mouseleave', function(evt){
-				if(!gameState.isSliding) {
+				if (!gameState.isSliding) {
 					this.setStroke('none');
 				} else if (!gameState.sliderSelected) {
 					this.setStroke('none');
 				}
-				if(gameState.showChakras) {
-					var buddies = getChakras(this);
-
-					for (var i=0; i<buddies[0].length; i++) {
-						buddies[0][i].setStroke('none');
-						buddies[0][i].setStrokeWidth(2);
-					} 
-					for (i=0; i<buddies[1].length; i++) {
-						buddies[1][i].setStroke('none');
-						buddies[1][i].setStrokeWidth(2);
-					}
-				}
-
-				 if(gameState.showSliding) {
+				if (gameState.showSliding) {
 					if (pieceArray[this.level][this.row] !=='mt'){
 						var slideTargets = getSlideable(pieceArray[this.level][this.row]);
 						for (var i=0; i<slideTargets.length;i++) {
@@ -981,36 +943,11 @@ var targetArray = new Array();
 						}
 					}
 				}
-
-				if(gameState.showGroups) {
-					if(pieceArray[this.level][this.row] === 'mt') {
-						var group = getEmptyGroup(this);
-						for (var j=0; j<group.length; j++) {
-							for (var i=0; i<group[j].length; i++) {
-								//               console.log('turning off circles')
-								targetArray[group[j][i].level][group[j][i].row].setStroke('none');
-								targetArray[group[j][i].level][group[j][i].row].setStrokeWidth(2);
-							}
-						}
-					}  
-				}
 				targetLayer.draw();
 			});
 
 			circle.on('dblclick', function(evt){
-				console.log('doubleclicked ' + this.level + ' ' + this.row);
-				var buddies = getGroup(pieceArray[this.level][this.row]);
-				console.log('Returned group is:');
-				console.log(buddies);
-				console.log("Number of liberties: " + countLiberties(buddies));
-				for (var i=0; i< buddies.length; i++) {
-					targetArray[buddies[i].level][buddies[i].row].setStroke('red');
-					targetArray[buddies[i].level][buddies[i].row].setStrokeWidth(4);
-				}
-				var chakras = getChakras(this);
-				console.log('chakras are');
-				console.log(chakras);
-				targetLayer.draw();
+				// zen
 			});
 
 			ring.push(circle);
