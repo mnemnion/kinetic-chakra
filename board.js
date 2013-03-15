@@ -618,10 +618,21 @@ slidePiece = function(piece, targetCircle) {
 		pieceArray[piece.level][piece.row] = 'mt';
 		//now we move it
 		piece = slidePiece(piece, targetCircle);
-
+		//tell the FireBase about it
+		moveArray.push({
+			type: 'slide',
+			color: piece.getFill(),
+			oldLevel: piece.level,
+			oldRow: piece.row,
+			newLevel: targetCircle.level,
+			newRow: targetCircle.row,
+			
+		})
+		moveBase.set(moveArray);
 		//then tell it where it is
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;
+
 
 		
 		gameStateNextTurn();
