@@ -41,6 +41,7 @@ gameStateNextTurn = function() {
 			slideArray[i][j] = 'mt';
 			targetArray[i][j].setStroke('none');
 	}
+	gameBase.update({gameState: gameState});
 	targetLayer.draw();
 }
 
@@ -55,7 +56,7 @@ gameStatePieceAdded = function(piece) {
 		color: piece.getFill(),
 		level: piece.level,
 		row: piece.row
-	})
+	});
 	moveBase.set(moveArray);
 	console.log('piece added');
 }
@@ -442,8 +443,6 @@ function addPiece (that, type) {
 		if (numLiberties === 0) {
 			removeBogusPiece(newPiece);  
 		} 
-			
-
 		pieceLayer.draw();
 };
 
@@ -627,14 +626,11 @@ slidePiece = function(piece, targetCircle) {
 			newLevel: targetCircle.level,
 			newRow: targetCircle.row,
 			
-		})
+		});
 		moveBase.set(moveArray);
 		//then tell it where it is
 		piece.level = targetCircle.level;
-		piece.row = targetCircle.row;
-
-
-		
+		piece.row = targetCircle.row;		
 		gameStateNextTurn();
 	} else {
 		console.log("cannot move piece to occupied zone");
@@ -769,6 +765,12 @@ var clickPass = (function() {
 	})
 
 	flashButton.on('click', function(evt){
+		
+		moveArray.push({
+			type: 'pass',
+			color: gameState.whichMove
+		});
+		moveBase.set(moveArray);
 		gameStateNextTurn();
 		flashButton.transitionTo({
 			opacity: 1,
