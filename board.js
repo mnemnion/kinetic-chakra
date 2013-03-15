@@ -9,7 +9,6 @@ var gameState = {
 	numCircles: 12,
 	whichMove: 'black',
 	isSliding: false,
-	isMyMove: true,
 	sliderSelected: false,
 	blackCaptures: 0,
 	whiteCaptures: 0,
@@ -18,6 +17,12 @@ var gameState = {
 	showGroups: false,
 	showSliding: false
 };
+
+var localState = {
+	isMyMove: true,
+	isLocalGame: true,
+	myColor: 'black'
+}
 
 var chakraGamesRef = new Firebase('https://chakra.firebaseIO.com/games/');
 
@@ -36,15 +41,8 @@ gameStateNextTurn = function() {
 	flipWhiteBlack();
 	gameState.isSliding = false;
 	gameState.sliderSelected = false;
-	for (i=0; i < 6; i++) {
-		for(j=0; j < gameState.numCircles; j++) {
-			slideArray[i][j] = 'mt';
-			targetArray[i][j].setStroke('none');
-	}
 	gameBase.update({gameState: gameState});
 	targetLayer.draw();
-}
-
 	console.log('next turn');
 }
 
@@ -80,10 +78,9 @@ var outerEdge = new Kinetic.Circle({
 
 var chakraRadius = outerEdge.getRadius()/2;
 
+//these hold pieces and slide targets as necessary
 var pieceArray = new Array();
 var slideArray = new Array();
-
-
 for (i=0; i < 6; i++) {
 	pieceArray[i] = new Array();
 	slideArray[i] = new Array();
@@ -96,21 +93,12 @@ for (i=0; i < 6; i++) {
 // Game Logic
 
 function cycleNumCircles(value, addend) {
-	// may I protest a moment and say
-	// that this is what %
-	// is supposed to do
-	// in a math-respecting language
  
 	/* BETTER WAY TO DO IT
-			
-			This is what I get for coding around a bug that other 
-			people obviously have! Also, for doing brute algorithms
-			when what we want is actual math. 
-			The below torturous logic, which does have the advantage of
-			constraining the variables, acting as a basic sanity check,
-			can be generalized as follows:
 
 			return ((this%n)+n)%n;
+
+			keeping the worse way b/c bounds checking
 
 	*/
 
@@ -382,6 +370,7 @@ killGroup = function(enemyGroup) {
 		gameState.blackCaptures += enemyGroup.length;
 		console.log("Black has captured " + gameState.blackCaptures + " stones so far");
 	}
+		gameBase.update({gameState: gameState});
 		console.log("destroying:");
 		console.log(enemyGroup);
 	for (i=0; i<enemyGroup.length; i++) {
@@ -403,6 +392,8 @@ removeBogusPiece = function(piece) {
 	piece.setFill('none');
 	moveArray.pop();
 	moveBase.set(moveArray);
+	gameState.isSliding = false;
+	gameBase.update({gameState: gameState}); 
 	pieceLayer.draw();
 }
 
@@ -447,6 +438,21 @@ function addPiece (that, type) {
 };
 
 slidePiece = function(piece, targetCircle) {
+	// this function contains trigonometric voodoo. 
+	// it is made inordinately complex because:
+	// a) there are always two circles the piece could be moving on
+	// b) it may need to move in either direction on either circle
+	// c) one of the circles may be a special case
+	// d) the nature of kinetic/canvas coordinates is such that, to
+	//	  allow an object to rotate on its center, you must place it too
+	//    far by exactly half the length/width and then offset it back to
+	//	  where you want it 
+	// e) a 'circle' is not a natural data type in JavaScript, and even if it was,
+	//    the way we keep track of positions does not make it obvious where on a given
+	//	  chakra a piece is located. More precisely, you always know one chakra a piece is on,
+	//    and can derive the other from the level through subtraction (or simple observation that
+	//    the level is the outermost one).
+
 	var chakras = getChakras(piece);
 	var slideable = Array();
 	var onClockwise = true;
@@ -454,28 +460,35 @@ slidePiece = function(piece, targetCircle) {
 	var direction = Array();
 	var slideGroup = new Kinetic.Group();
 	var found = false;
+
+	var slideCallback = function() {
+		slideGroup.remove();
+		// make murder if called for
+		emanateKill(piece);
+		piece.setX(targetCircle.getX());
+		piece.setY(targetCircle.getY());
+		pieceLayer.add(piece);
+		pieceLayer.draw();
+		gameStateNextTurn();
+	}
 	
 	// find out on which chakra is the target, in which direction
 	for (i = 0; i<=1; i++){
 		if (found) {break};
 		var innerRadius = 0;
 		goingUp = true;
-		console.log("going up the " + i + " chakra");
 		for (j=1; j<chakras[i].length; j++) {
-			console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
 			if (chakras[i][j].level === chakras[i][j-1].level) {
 				innerRadius+=1; // accounting for the middle point
 			}
 			if (chakras[i][j] === targetCircle) {
-				console.log("targetCircle is " + i + " sub " + j);
 				innerRadius = innerRadius + j;
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				found = true; 
 				break;
 			} else if (thisPiece !== 'mt') {
-				console.log('thisPiece blocks: ');
 				console.log(thisPiece);
 				break;
 			}
@@ -485,38 +498,27 @@ slidePiece = function(piece, targetCircle) {
 		} 
 		innerRadius = 0;
 		goingUp = false;
-		console.log("going down the " + i + " chakra");
 		for(j=chakras[i].length-1; j>=1; j--) {
-			console.log('checking ' + chakras[i][j].level + ' sub ' + chakras[i][j].row);
 			var thisPiece = pieceArray[chakras[i][j].level][chakras[i][j].row];
 		
 			if (chakras[i][j].level === chakras[i][(j+1)%chakras[i].length].level) { //'remainder' ok as both inputs are positive
 				innerRadius+=1; // accounting for the middle point
-				console.log("center point detected");
 			}
 			if (chakras[i][j] === targetCircle) {
 				direction.push(onClockwise);
 				direction.push(goingUp);
 				innerRadius = innerRadius+(11-j);
-				console.log("innerRadius: " + innerRadius);
 				found = true;
 				break;
 			} else if (thisPiece !== 'mt') {
-				console.log('thisPiece blocks: ');
 				console.log(thisPiece);
 				break;
 			}
 		}
-
-		console.log("direction:");
-		console.log(direction);
 		onClockwise = !onClockwise;
 	}
-		console.log("direction:");
-		console.log(direction);
 
 	if (piece.level === 5 && !direction[0]) { //outer ring
-
 		piece.remove();
 		slideGroup.add(piece);
 		slideGroup.setX(outerEdge.getX()/2);
@@ -533,18 +535,8 @@ slidePiece = function(piece, targetCircle) {
 			rotation: radian,
 			duration: 0.2*innerRadius,
 			easing: 'ease-in-out',
-			callback: function() {
-				slideGroup.remove();
-				// make murder if called for
-				emanateKill(piece);
-				piece.setX(targetCircle.getX());
-				piece.setY(targetCircle.getY());
-				pieceLayer.add(piece);
-				pieceLayer.draw();
-				console.log(piece.getX(),piece.getY());
-			}	
+			callback: slideCallback	
 		});
-		console.log(piece.getX(),piece.getY());
 	} else { // we are on one of the inner rings
 				//clockwise circle, chakra[0]
 				var chakraNum;
@@ -563,7 +555,6 @@ slidePiece = function(piece, targetCircle) {
 						}
 					}
 				}
-				console.log("Chakranum is: " + chakraNum);
 				chakraNum = cycleNumCircles(chakraNum, -1);
 				piece.remove();
 				slideGroup.add(piece);
@@ -573,38 +564,20 @@ slidePiece = function(piece, targetCircle) {
 				slideGroup.setOffset(chakraRing[chakraNum].getOffset());
 				if(direction[1] && !direction[0]) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
-					console.log("this works?"); // yes it does
 				} else if (direction[1] && direction[0]) {
 					radian = 2*Math.PI*innerRadius/gameState.numCircles;
-					console.log("this works also?"); // yep
 				} else if (!direction[1] && direction[0]) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
-					console.log('when does this happen?');
 				} else {
 					radian = 2*Math.PI*innerRadius/gameState.numCircles;;
-					console.log("lastly, this happens sometimes"); 
 				}
-				console.log("on ring:");
-				console.log(chakraRing[chakraNum]);
-				console.log("inner radius: " + innerRadius);
 				console.log("moving " + piece.level + " sub " + piece.row + " to " + targetCircle.level + " sub " + targetCircle.row);
 				slideGroup.transitionTo({
 					rotation: radian,
 					duration: 0.3*innerRadius,
 					easing: 'ease-in-out',
-					callback: function() {
-						slideGroup.remove();
-						// make murder if called for
-						emanateKill(piece);
-						piece.setX(targetCircle.getX());
-						piece.setY(targetCircle.getY());
-						pieceLayer.add(piece);
-						pieceLayer.draw();
-						console.log(piece.getX(),piece.getY());
-					}	
+					callback: slideCallback
 				});
-				console.log(piece.getX(),piece.getY());
-
 		}
 	return piece;
 };
@@ -616,6 +589,13 @@ slidePiece = function(piece, targetCircle) {
 		//piece is in the array but doesn't know it
 		pieceArray[piece.level][piece.row] = 'mt';
 		//now we move it
+		for (i=0; i < 6; i++) {
+			for(j=0; j < gameState.numCircles; j++) {
+				//slideArray[i][j] = 'mt';
+				targetArray[i][j].setStroke('none');
+			}
+		}
+		targetLayer.draw();
 		piece = slidePiece(piece, targetCircle);
 		//tell the FireBase about it
 		moveArray.push({
@@ -631,11 +611,11 @@ slidePiece = function(piece, targetCircle) {
 		//then tell it where it is
 		piece.level = targetCircle.level;
 		piece.row = targetCircle.row;		
-		gameStateNextTurn();
 	} else {
 		console.log("cannot move piece to occupied zone");
 	}
 	pieceLayer.draw();
+	// nb: slidePiece has a callback so stuff happens after movePiece returns. 
 }
 
 calculateWin = function() {
