@@ -393,14 +393,19 @@ killGroup = function(enemyGroup) {
 	moveBase.set(moveArray);
 }
 
-removeBogusPiece = function(piece) {
+var removePiece = function(piece){
 	pieceArray[piece.level][piece.row] = 'mt';
 	piece.setFill('none');
-	moveArray.pop();
-	moveBase.set(moveArray);
 	gameState.isSliding = false;
 	gameBase.update({gameState: gameState}); 
 	pieceLayer.draw();
+}
+
+removeBogusPiece = function(piece) {
+	removePiece(piece);
+	moveArray.pop();
+	moveBase.set(moveArray);
+	
 }
 
 emanateKill = function(piece) {
@@ -679,6 +684,39 @@ calculateWin = function() {
 
 };
 
+var undoMove = function() { // hooo boy
+	// undoMove presumes you have permission. 
+	// that is, it does not care it if was 'your'
+	// move. it will remove it. 
+	var latestMove = moveArray.pop();
+	console.log('latest move is:');
+	console.log(latestMove);
+	switch (latestMove.type) {
+		case 'add':
+			if (latestMove.color === pieceArray[latestMove.level][latestMove.row].getFill()) {
+				// remove piece
+				removePiece(pieceArray[latestMove.level][latestMove.row]);
+
+			} else {
+				console.log("attempt to undo added piece has barfed");
+			}
+			break;
+		case 'slide':
+			if (latestMove.color === pieceArray[latestMove.level][latestMove.row]) {
+				// put it back where it belongs, complete with fancy transition
+			} else {
+				console.log("attempt to slide added piece is unhappy");
+			}
+			break;
+		case 'kill':
+			// unkill the whole group, and then unmove the prior move, because whatever it was,
+			// it's what killed the piece in question. 
+			break;
+
+	}
+	moveBase.set(moveArray);
+
+}
 // End Game Logic
 
 // View Logic
@@ -779,7 +817,7 @@ var clickPass = (function() {
 }());
 
 (function() {
-	var groupsButton = new Kinetic.Rect ({
+	var undoButton = new Kinetic.Rect ({
 		x: gameStage.getWidth()*4/5,
 		y: gameStage.getHeight()*3/5,
 		cornerRadius: 6,
@@ -791,26 +829,17 @@ var clickPass = (function() {
 	})
 
 	if (gameState.showGroups) {
-		groupsButton.setFill('lightgreen');
+		undoButton.setFill('lightgreen');
 	}
 
-	groupsButton.on('click', function(evt){
-		if (gameState.showGroups === false) {
-			gameState.showGroups = true;
-			this.setFill('lightgreen');
-		} else {
-			gameState.showGroups = false;
-			this.setFill('darkgreen');
-		}
+	undoButton.on('click', function(evt){
+		undoMove();
 		targetLayer.draw();
 	});
 
-	targetLayer.add(groupsButton);
+	targetLayer.add(undoButton);
 	targetLayer.draw();
 }());
-
-
-
 
 var chakraRing = new Array();
 // populate chakraRing group with circles.
