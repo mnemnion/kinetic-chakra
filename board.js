@@ -532,9 +532,9 @@ slidePiece = function(piece, targetCircle) {
 	if (piece.level === 5 && !direction[0]) { //outer ring
 		piece.remove();
 		slideGroup.add(piece);
-		slideGroup.setX(outerEdge.getX()/2);
-		slideGroup.setY(outerEdge.getY()/2);
-		slideGroup.setOffset(outerEdge.getOffset());
+		 slideGroup.setX(outerEdge.getX()/2);
+		 slideGroup.setY(outerEdge.getY()/2);
+		 //slideGroup.setOffset(slideGroup.getX/2,slideGroup.getY/2);
 		slideLayer.add(slideGroup);
 		if (direction[1]) {
 			radian = -2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles;
@@ -572,7 +572,7 @@ slidePiece = function(piece, targetCircle) {
 				slideGroup.setX(chakraRing[chakraNum].getX()/2);
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
-				slideGroup.setOffset(chakraRing[chakraNum].getOffset());
+				// slideGroup.setOffset(chakraRing[chakraNum].getOffset());
 				if(direction[1] && !direction[0]) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
 				} else if (direction[1] && direction[0]) {
