@@ -73,13 +73,13 @@ var slideLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
-	x: gameStage.getHeight()/2,// gameStage.getHeight() / 2,
-	y: gameStage.getHeight()/2,// gameStage.getHeight() / 2,
+	x: gameStage.getHeight(),// gameStage.getHeight() / 2,
+	y: gameStage.getHeight(),// gameStage.getHeight() / 2,
 	radius: gameStage.getHeight()/2 - 0.1*gameStage.getHeight()/2,
 	fill: 'transparent',
-	stroke: 'blue',
+	stroke: 'transparent',
 	strokeWidth: 4,
-	// offset: [gameStage.getHeight()/2,gameStage.getHeight()/2]
+	offset: [gameStage.getHeight()/2,gameStage.getHeight()/2]
 });
 
 var chakraRadius = outerEdge.getRadius()/2;
@@ -532,9 +532,9 @@ slidePiece = function(piece, targetCircle) {
 	if (piece.level === 5 && !direction[0]) { //outer ring
 		piece.remove();
 		slideGroup.add(piece);
-		 slideGroup.setX(outerEdge.getX()/2);
-		 slideGroup.setY(outerEdge.getY()/2);
-		 //slideGroup.setOffset(slideGroup.getX/2,slideGroup.getY/2);
+		slideGroup.setX(outerEdge.getX()/2);
+		slideGroup.setY(outerEdge.getY()/2);
+		slideGroup.setOffset(outerEdge.getOffset());
 		slideLayer.add(slideGroup);
 		if (direction[1]) {
 			radian = -2*Math.PI*cycleNumCircles(piece.row,-targetCircle.row)/gameState.numCircles;
@@ -572,7 +572,7 @@ slidePiece = function(piece, targetCircle) {
 				slideGroup.setX(chakraRing[chakraNum].getX()/2);
 				slideGroup.setY(chakraRing[chakraNum].getY()/2);
 				slideLayer.add(slideGroup);
-				// slideGroup.setOffset(chakraRing[chakraNum].getOffset());
+				slideGroup.setOffset(chakraRing[chakraNum].getOffset());
 				if(direction[1] && !direction[0]) {
 					radian = -2*Math.PI*innerRadius/gameState.numCircles;
 				} else if (direction[1] && direction[0]) {
@@ -854,14 +854,14 @@ var chakraRing = new Array();
 		};
 
 		var circle = new Kinetic.Circle({
-			x: (gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
-			y: (gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
+			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
+			y: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
 			radius: chakraRadius,
 			fill: 'transparent',
 			stroke: color,
 			strokeWidth: 4,
-			// offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
-				// 		gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
+			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
+						gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
 		});
 		chakraRing[i]=circle;
 	};
