@@ -44,7 +44,7 @@ gameStateNextTurn = function() {
 	for (i=0; i < 6; i++) {
 		for(j=0; j < gameState.numCircles; j++) {
 			slideArray[i][j] = 'mt';
-			targetArray[i][j].setStroke('none');
+			targetArray[i][j].setStroke('transparent');
 		}
 	}
 	gameBase.update({gameState: gameState});
@@ -73,13 +73,13 @@ var slideLayer = new Kinetic.Layer();
 
 // outerEdge defines the outer edge of the board
 var outerEdge = new Kinetic.Circle({ 
-	x: gameStage.getHeight(),// gameStage.getHeight() / 2,
-	y: gameStage.getHeight(),// gameStage.getHeight() / 2,
+	x: gameStage.getHeight()/2,// gameStage.getHeight() / 2,
+	y: gameStage.getHeight()/2,// gameStage.getHeight() / 2,
 	radius: gameStage.getHeight()/2 - 0.1*gameStage.getHeight()/2,
-	fill: 'none',
-	stroke: 'none',
+	fill: 'transparent',
+	stroke: 'blue',
 	strokeWidth: 4,
-	offset: [gameStage.getHeight()/2,gameStage.getHeight()/2]
+	// offset: [gameStage.getHeight()/2,gameStage.getHeight()/2]
 });
 
 var chakraRadius = outerEdge.getRadius()/2;
@@ -386,7 +386,7 @@ killGroup = function(enemyGroup) {
 		}
 		killMove.pieces.push(deadPiece);
 		pieceArray[enemyGroup[i].level][enemyGroup[i].row] = 'mt';
-		enemyGroup[i].setFill('none');
+		enemyGroup[i].setFill('transparent');
 	}
 	pieceLayer.draw();
 	moveArray.push(killMove);
@@ -395,7 +395,7 @@ killGroup = function(enemyGroup) {
 
 var removePiece = function(piece){
 	pieceArray[piece.level][piece.row] = 'mt';
-	piece.setFill('none');
+	piece.setFill('transparent');
 	gameState.isSliding = false;
 	gameBase.update({gameState: gameState}); 
 	pieceLayer.draw();
@@ -603,7 +603,7 @@ movePiece = function (piece, targetCircle) {
 		for (i=0; i < 6; i++) {
 			for(j=0; j < gameState.numCircles; j++) {
 				//slideArray[i][j] = 'mt';
-				targetArray[i][j].setStroke('none');
+				targetArray[i][j].setStroke('transparent');
 			}
 		}
 		targetLayer.draw();
@@ -854,14 +854,14 @@ var chakraRing = new Array();
 		};
 
 		var circle = new Kinetic.Circle({
-			x: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
-			y: 2*(gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
+			x: (gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles)),
+			y: (gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)),
 			radius: chakraRadius,
-			fill: 'none',
+			fill: 'transparent',
 			stroke: color,
 			strokeWidth: 4,
-			offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
-						gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
+			// offset: [gameStage.getHeight() / 2 + chakraRadius*Math.sin(2*Math.PI*i/gameState.numCircles),
+				// 		gameStage.getHeight() / 2 + chakraRadius*Math.cos(2*Math.PI*i/gameState.numCircles)]
 		});
 		chakraRing[i]=circle;
 	};
@@ -882,8 +882,8 @@ var targetArray = new Array();
 				x : gameStage.getHeight() / 2 + 2*ringRadius*Math.cos(2*Math.PI*(m+n/2)/gameState.numCircles),
 				y : gameStage.getHeight() / 2 + 2*ringRadius*Math.sin(2*Math.PI*(m+n/2)/gameState.numCircles),
 				radius : chakraRadius/8,
-				fill: 'none',
-				stroke: 'none',
+				fill: 'transparent',
+				stroke: 'transparent',
 				strokeWidth: 2,
 			});
 			circle.level = n-1;
@@ -955,16 +955,16 @@ var targetArray = new Array();
 
 			circle.on('mouseleave', function(evt){
 				if (!gameState.isSliding) {
-					this.setStroke('none');
+					this.setStroke('transparent');
 				} else if (!gameState.sliderSelected) {
-					this.setStroke('none');
+					this.setStroke('transparent');
 				}
 				if (gameState.showSliding) {
 					if (pieceArray[this.level][this.row] !=='mt'){
 						var slideTargets = getSlideable(pieceArray[this.level][this.row]);
 						for (var i=0; i<slideTargets.length;i++) {
 							if(slideTargets[i] !== undefined) {
-								slideTargets[i].setStroke('none');
+								slideTargets[i].setStroke('transparent');
 								slideTargets[i].setStrokeWidth(2);
 							} else {
 								console.log("undefined targetCircle found in getSlideable return value");
